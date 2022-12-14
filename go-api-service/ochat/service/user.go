@@ -21,7 +21,7 @@ func (s *UserService) Register(
 		return userInfo, errors.New(errStr)
 	}
 
-	salt := comm.RandStr(6, comm.RandStrlevel5)
+	salt := comm.RandStr(6, comm.Rand_Str_Level_5)
 
 	token := comm.GenerateToken(password + salt)
 
