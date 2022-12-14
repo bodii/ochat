@@ -16,6 +16,7 @@ const (
 	CONTACT_STATUS_VALID
 )
 
+// 联系人表
 type Contact struct {
 	Id           int64     `xorm:"pk autoincr bigint not null comment('联系人表id')" form:"id" json:"id"`
 	UserId       int64     `xorm:"bigint not null default 0 comment('用户id')" form:"user_id" json:"user_id"`

@@ -14,6 +14,7 @@ const (
 	COMMUNITY_MAX_NUMBERS int = 500
 )
 
+// 群信息表
 type Community struct {
 	Id        int64     `xorm:"pk autoincr bigint not null comment('群表id')" form:"id" json:"id"`
 	Name      string    `xorm:"varchar(60) index 'community_name' not null default '' comment('群名称')" form:"name" json:"name"`
