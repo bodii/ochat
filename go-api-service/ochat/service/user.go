@@ -11,7 +11,7 @@ type UserService struct {
 }
 
 func (s *UserService) Register(
-	mobile, avatar, nickname, passwd, sex string) (user models.User, err error) {
+	mobile, avatar, nickname, password string, sex int) (user models.User, err error) {
 
 	userInfo := models.User{}
 	_, err = DB.Where("mobile = ?", mobile).Get(&userInfo)
@@ -23,14 +23,14 @@ func (s *UserService) Register(
 
 	salt := comm.RandStr(6, comm.RandStrlevel5)
 
-	token := comm.GenerateToken(passwd + salt)
+	token := comm.GenerateToken(password + salt)
 
 	userInfo = models.User{
 		Mobile:     mobile,
 		Avatar:     avatar,
 		Nickname:   nickname,
 		Sex:        sex,
-		Passwd:     comm.GeneratePasswd(passwd, salt),
+		Password:   comm.GeneratePasswd(password, salt),
 		Salt:       salt,
 		Created_at: time.Now(),
 		Token:      token,
@@ -44,7 +44,7 @@ func (s *UserService) Register(
 	return userInfo, nil
 }
 
-func (s *UserService) Login(mobile, passwd string) (user models.User, err error) {
+func (s *UserService) Login(mobile, password string) (user models.User, err error) {
 	userInfo := models.User{}
 	if _, err = DB.Where("mobile = ?", mobile).Get(&userInfo); err != nil {
 		return userInfo, err
@@ -54,8 +54,8 @@ func (s *UserService) Login(mobile, passwd string) (user models.User, err error)
 		return userInfo, err
 	}
 
-	if !comm.VaildataPasswd(passwd, userInfo.Salt, user.Passwd) {
-		return models.User{}, errors.New("passwd vaildate failute")
+	if !comm.VaildataPasswd(password, userInfo.Salt, user.Password) {
+		return models.User{}, errors.New("password vaildate failute")
 	}
 
 	return userInfo, nil
@@ -71,7 +71,7 @@ func (s *UserService) UpToken(user_id int) (user models.User, err error) {
 		return models.User{}, err
 	}
 
-	token := comm.GenerateToken(userInfo.Passwd + userInfo.Salt)
+	token := comm.GenerateToken(userInfo.Password + userInfo.Salt)
 
 	userInfo.Token = token
 	num, err := DB.ID(user_id).Cols("token").Update(&userInfo)

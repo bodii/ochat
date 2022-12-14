@@ -5,17 +5,18 @@ import (
 	"net/http"
 	"ochat/comm"
 	"ochat/service"
+	"strconv"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	mobile := r.PostForm.Get("mobile")
-	passwd := r.PostForm.Get("passwd")
+	password := r.PostForm.Get("password")
 	log.Printf("%v", r.PostForm)
 
 	userServ := service.UserService{}
-	userInfo, err := userServ.Login(mobile, passwd)
+	userInfo, err := userServ.Login(mobile, password)
 	if err != nil || userInfo.Id == 0 {
 		comm.Res(w, 1001, err.Error(), nil)
 		return
@@ -31,7 +32,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	avatar := r.Form.Get("avatar")
 	nickname := r.Form.Get("nickname")
 	passwd := r.Form.Get("passwd")
-	sex := r.Form.Get("sex")
+	sex, _ := strconv.Atoi(r.FormValue("sex"))
 
 	userServ := &service.UserService{}
 	userInfo, err := userServ.Register(mobile, avatar, nickname, passwd, sex)
