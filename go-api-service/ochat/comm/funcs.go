@@ -3,10 +3,15 @@ package comm
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"log"
 	"math/rand"
+	"os"
+	"path"
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -128,4 +133,39 @@ func GenerateToken(data string) string {
 	nowStr, _ := time.Parse("2006010215", time.Now().String())
 
 	return MD5ToUpper(data + nowStr.String())
+}
+
+func GetProjectDIR() string {
+	dir, err := os.Getwd()
+
+	if err != nil {
+		return os.Args[0]
+	}
+
+	return dir
+}
+
+// Read the configuration content of a yaml file type
+// Parmas: [file string] filename
+// Returns: Specifies a structure of type [T]
+func ReadYamlConfig[T any](file string) T {
+	if 1 > strings.LastIndex(file, ".yaml") {
+		panic("input file name not is yaml file")
+	}
+
+	PROJECT_DIR := GetProjectDIR()
+	configPath := path.Join(PROJECT_DIR, "config/"+file)
+	content, _ := os.ReadFile(configPath)
+
+	var t T
+	err := yaml.Unmarshal(content, &t)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	filename := strings.TrimSuffix(file, ".yaml")
+
+	log.Printf("read %s config succuee!", filename)
+
+	return t
 }

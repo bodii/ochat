@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -8,34 +9,47 @@ import (
 	"xorm.io/xorm"
 )
 
-var db_engine *xorm.Engine
-var once sync.Once
+var (
+	DB_Engine    *xorm.Engine
+	db_init_once sync.Once
+	mysqlConf    mysqlConfT
+)
 
 func DBOnceInit() *xorm.Engine {
-	if db_engine == nil {
-		once.Do(initConnect)
-	}
 
-	return db_engine
+	db_init_once.Do(initConnect)
+	// fmt.Printf("%#v\n", DB_Engine)
+
+	return DB_Engine
 }
 
 func initConnect() {
-	driverName := "mysql"
-	dataSource := "root:123456@(127.0.0.1:3306)/ochat_database?charset=utf8mb4"
+	dataSource := fmt.Sprintf(
+		"%s:%s@(%s:%d)/%s?charset=%s",
+		mysqlConf.User,
+		mysqlConf.Password,
+		mysqlConf.Host,
+		mysqlConf.Port,
+		mysqlConf.Database,
+		mysqlConf.Charset,
+	)
 
-	db_engine, err := xorm.NewEngine(driverName, dataSource)
+	db_engine, err := xorm.NewEngine(
+		mysqlConf.DriverName, dataSource)
 	if err != nil {
-		log.Fatal(err.Error())
+		panic(err.Error())
 	}
 
 	// show sql
-	db_engine.ShowSQL(true)
+	db_engine.ShowSQL(mysqlConf.ShowSQL)
 
 	// max connect number
-	db_engine.SetMaxOpenConns(2)
+	db_engine.SetMaxOpenConns(mysqlConf.MaxLineNums)
 
 	// auto sync
 	// db_engine.Sync2()
+
+	DB_Engine = db_engine
 
 	log.Println("init database success!")
 }
