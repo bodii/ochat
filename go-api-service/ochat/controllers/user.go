@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
+	"ochat/bootstrap"
 	"ochat/comm"
 	"ochat/service"
 	"strconv"
@@ -11,14 +11,21 @@ import (
 func Login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
+	userServ := &service.UserService{
+		DB: bootstrap.DB_Engine,
+	}
+
 	mobile := r.PostForm.Get("mobile")
 	password := r.PostForm.Get("password")
-	log.Printf("%v", r.PostForm)
 
-	userServ := service.UserService{}
 	userInfo, err := userServ.Login(mobile, password)
-	if err != nil || userInfo.Id == 0 {
+	if err != nil {
 		comm.Res(w, 1001, err.Error(), nil)
+		return
+	}
+
+	if userInfo.Id == 0 {
+		comm.Res(w, 1002, "failure: user data is empty", nil)
 		return
 	}
 
@@ -34,7 +41,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	passwd := r.Form.Get("passwd")
 	sex, _ := strconv.Atoi(r.FormValue("sex"))
 
-	userServ := &service.UserService{}
+	userServ := &service.UserService{
+		DB: bootstrap.DB_Engine,
+	}
+
 	userInfo, err := userServ.Register(mobile, avatar, nickname, passwd, sex)
 	if err != nil {
 		comm.Res(w, 1001, "register failure: "+err.Error(), nil)

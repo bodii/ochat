@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"ochat/bootstrap"
 	"ochat/controllers"
@@ -13,5 +14,9 @@ func main() {
 	http.HandleFunc("/user/login", controllers.Login)
 	http.HandleFunc("/user/signup", controllers.Register)
 
-	http.ListenAndServe(":8080", nil)
+	servConf := bootstrap.SystemConf.Serv
+
+	http.ListenAndServe(
+		fmt.Sprintf("%s:%d", servConf.Host, servConf.Port),
+		nil)
 }
