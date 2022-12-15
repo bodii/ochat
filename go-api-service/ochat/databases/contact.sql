@@ -6,7 +6,7 @@ create table contact (
     type tinyint not null default 1 comment '联系人类型,1:好友;2:群',
     nickname varchar(30) not null default '' comment '称呼，1:好友称呼;2:在群中的别称',
     abstract varchar(250) not null default '' comment '简介',
-    status tinyint not null default 1 comment '是否有效,1:有效;0:无效',
+    status tinyint not null default 1 comment '是否有效,-1:拉黑(屏蔽);0:无效;1:有效;',
     created_at datetime(6) not null comment '创建时间',
     updated_at datetime(6) not null comment '更新时间',
     key contact_user_id_status(user_id, status, type),

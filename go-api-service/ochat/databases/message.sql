@@ -16,7 +16,7 @@ create table message (
     created_at datetime(6) not null  comment '创建时间',
     sender_updated_at datetime(6) not null comment '撤销时间',
     receiver_updated_at datetime(6) not null comment '收接者已读时间',
-    key message_receiver_id(receiver_id,mode),
+    key message_receiver_id_mode(receiver_id,mode),
     key message_sender_id(sender_id),
     key message_sender_status(sender_status),
     key message_receiver_status(receiver_status)
