@@ -12,4 +12,4 @@ create table community (
 	key community_name(name),
     key community_manager_id(manager_id),
     key community_status(status)
-) engine=innodb default charset=utf8mb4 comment '群信息表';
+) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '群信息表';

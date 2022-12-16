@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"ochat/bootstrap"
 	"ochat/comm"
 	"ochat/models"
 	"time"
@@ -14,7 +16,8 @@ type UserService struct {
 }
 
 func (s *UserService) Register(
-	mobile, avatar, nickname, password string, sex int) (user models.User, err error) {
+	mobile, username, avatar, nickname, password string,
+	sex int) (user models.User, err error) {
 
 	userInfo := models.User{}
 	_, err = s.DB.Where("mobile = ?", mobile).Get(&userInfo)
@@ -24,19 +27,24 @@ func (s *UserService) Register(
 		return userInfo, errors.New(errStr)
 	}
 
-	salt := comm.RandStr(6, comm.Rand_Str_Level_5)
-
+	salt := comm.RandStr(12, comm.Rand_Str_Level_5)
 	token := comm.GenerateToken(password + salt)
+
+	avatar = fmt.Sprintf("%s%s", bootstrap.HTTP_Avatar_URI, avatar)
 
 	userInfo = models.User{
 		Mobile:     mobile,
+		Username:   username,
 		Avatar:     avatar,
 		Nickname:   nickname,
 		Sex:        sex,
 		Password:   comm.GeneratePasswd(password, salt),
 		Salt:       salt,
-		Created_at: time.Now(),
 		Token:      token,
+		About:      "",
+		Status:     1,
+		Created_at: time.Now(),
+		Updated_at: time.Now(),
 	}
 
 	if num, err := s.DB.InsertOne(&userInfo); err != nil || num <= 0 {

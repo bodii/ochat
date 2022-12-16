@@ -20,4 +20,4 @@ create table message (
     key message_sender_id(sender_id),
     key message_sender_status(sender_status),
     key message_receiver_status(receiver_status)
-) engine=innodb default charset=utf8mb4 comment '消息表';
+) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '消息表';

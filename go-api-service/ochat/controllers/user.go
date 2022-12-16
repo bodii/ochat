@@ -36,16 +36,47 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	mobile := r.Form.Get("mobile")
+	username := r.Form.Get("username")
 	avatar := r.Form.Get("avatar")
 	nickname := r.Form.Get("nickname")
-	passwd := r.Form.Get("passwd")
+	passwd := r.Form.Get("password")
 	sex, _ := strconv.Atoi(r.FormValue("sex"))
+
+	if mobile == "" {
+		comm.Res(w, 1001, "register failure: mobile is empty!", nil)
+		return
+	}
+
+	if username == "" {
+		comm.Res(w, 1002, "register failure: username is empty!", nil)
+		return
+	}
+
+	if passwd == "" {
+		comm.Res(w, 1003, "register failure: password is empty!", nil)
+		return
+	}
+
+	if avatar == "" {
+		switch sex {
+		case 1:
+			avatar = "avatar_boy_kid_person_icon.png"
+		case 2:
+			avatar = "child_girl_kid_person_icon.png"
+		default:
+			avatar = "avatar_boy_male_user_young_icon.png"
+		}
+	}
+
+	if nickname == "" {
+		nickname = comm.RandStr(20, 5)
+	}
 
 	userServ := &service.UserService{
 		DB: bootstrap.DB_Engine,
 	}
 
-	userInfo, err := userServ.Register(mobile, avatar, nickname, passwd, sex)
+	userInfo, err := userServ.Register(mobile, username, avatar, nickname, passwd, sex)
 	if err != nil {
 		comm.Res(w, 1001, "register failure: "+err.Error(), nil)
 		return

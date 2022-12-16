@@ -15,4 +15,4 @@ create table user (
     created_at datetime(6) not null comment '创建时间',
     updated_at datetime(6) not null comment '更新时间',
     key user_status(status) 
-) engine=innodb default charset=utf8mb4 comment '接入鉴权/用户信息表';
+) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '接入鉴权/用户信息表';

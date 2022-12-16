@@ -24,14 +24,14 @@ type User struct {
 	Mobile     string    `xorm:"varchar(20) unique not null default '' comment('手机号')" form:"mobile" json:"mobile"`
 	Username   string    `xorm:"varchar(20) unique not null default '' comment('用户名')" form:"username" json:"username"`
 	Nickname   string    `xorm:"varchar(20) not null default '' comment('用户id')" form:"nickname" json:"nickname"`
-	Password   string    `xorm:"varchar(40) not null default '' comment('密码')" form:"password" json:"password"`
+	Password   string    `xorm:"varchar(40) not null default '' comment('密码')" form:"-" json:"-"`
 	About      string    `xorm:"varchar(250) not null default '' comment('简单描述')" form:"about" json:"about"`
 	Token      string    `xorm:"varchar(50) not null default '' comment('用户的token')" form:"token" json:"token"`
-	Salt       string    `xorm:"varchar(40) not null default '' comment('盐')" form:"" json:""`
+	Salt       string    `xorm:"varchar(40) not null default '' comment('盐')" form:"-" json:"-"`
 	Avatar     string    `xorm:"varchar(160) not null default '' comment('头像')" form:"avatar" json:"avatar"`
 	Sex        int       `xorm:"tinyint not null default 1 comment('性别,0:无;1:男;2:女')" form:"sex" json:"sex"`
 	Online     int64     `xorm:"bigint not null default 0 comment('在线时长')" form:"online" json:"online"`
-	Status     string    `xorm:"tinyint index('user_status') not null default 1 comment('状态是否可用, 1:可用;0:冻结')" form:"" json:""`
+	Status     int       `xorm:"tinyint index('user_status') not null default 1 comment('状态是否可用, 1:可用;0:冻结')" form:"-" json:"-"`
 	Created_at time.Time `xorm:"datetime(6) not null comment('创建时间')" form:"created_at" json:"created_at"`
 	Updated_at time.Time `xorm:"datetime(6) not null comment('更新时间')" form:"updated_at" json:"updated_at"`
 }

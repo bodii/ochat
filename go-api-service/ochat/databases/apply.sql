@@ -11,4 +11,4 @@ create table apply (
 	updated_at datetime(6) not null comment '更新时间',
 	key apply_responder_status_type(responder, status, type),
     key community_petitioner(petitioner)
-) engine=innodb default charset=utf8mb4 comment '申请好友(加群)表';
+) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '申请好友(加群)表';

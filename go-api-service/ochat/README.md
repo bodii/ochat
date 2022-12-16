@@ -4,4 +4,4 @@
 # apis
 # progress
 # Public License
-MIT License
+MPL-2.0 license

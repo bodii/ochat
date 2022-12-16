@@ -6,3 +6,9 @@ app:
 server:
   host: 127.0.0.1
   port: 8080
+
+avatar:
+  file_dir: /files/static/avatar/default/
+  uri: /files/avatar/
+  suffix_name: .png
+  default_avatar: avatar_boy_male_user_young_icon

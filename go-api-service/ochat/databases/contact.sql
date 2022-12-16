@@ -11,4 +11,4 @@ create table contact (
     updated_at datetime(6) not null comment '更新时间',
     key contact_user_id_status(user_id, status, type),
     key contact_friend_user_id(friend_user_id)
-) engine=innodb default charset=utf8mb4 comment '联系人表';
+) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '联系人表';

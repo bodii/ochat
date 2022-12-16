@@ -91,8 +91,16 @@ func GetNano2md5String() string {
 }
 
 // func RandStr
+
 // params: [length int] rand string length
-// [level int] 1: 小写字母；2：大写字母；3：数字；4：小写字母+大写字母；5：小写字母+大写字母+数字
+// [level int]
+// 1：小写字母；
+// 2：大写字母；
+// 3：数字；
+// 4：小写字母+大写字母；
+// 5：小写字母+大写字母+数字;
+// 6：小写字母+大写字母+数字+特殊字符
+//
 // returns: a random string of length and level
 func RandStr(length int, level int) string {
 	r := GetUnixNanoRandSeed()
@@ -153,8 +161,7 @@ func ReadYamlConfig[T any](file string) T {
 		panic("input file name not is yaml file")
 	}
 
-	PROJECT_DIR := GetProjectDIR()
-	configPath := path.Join(PROJECT_DIR, "config/"+file)
+	configPath := path.Join(GetProjectDIR(), "config/"+file)
 	content, _ := os.ReadFile(configPath)
 
 	var t T
