@@ -72,7 +72,7 @@ func (s *UserService) Login(mobile, password string) (user models.User, err erro
 	return user, nil
 }
 
-func (s *UserService) UpToken(user_id int) (user models.User, err error) {
+func (s *UserService) UpToken(user_id int64) (user models.User, err error) {
 	_, err = s.DB.Where("id = ?", user_id).Get(&user)
 	if err != nil {
 		return user, err
@@ -91,4 +91,18 @@ func (s *UserService) UpToken(user_id int) (user models.User, err error) {
 	}
 
 	return user, nil
+}
+
+func (s *UserService) CheckToken(user_id int64, token string) bool {
+	user := models.User{}
+	_, err := s.DB.Where("id = ?", user_id).Get(&user)
+	if err != nil || user.Id == 0 || user.Token == "" {
+		return false
+	}
+
+	if user.Token != token {
+		return false
+	}
+
+	return true
 }

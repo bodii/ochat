@@ -43,6 +43,7 @@ type avatarConfT struct {
 	Uri           string `yaml:"uri"`
 	SuffixName    string `yaml:"suffix_name"`
 	DefaultAvatar string `yaml:"default_avatar"`
+	UploadDir     string `yaml:"upload_dir"`
 }
 
 // db mysql config struct type

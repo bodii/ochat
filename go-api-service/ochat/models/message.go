@@ -43,6 +43,13 @@ const (
 	MESSAGE_RECEIVER_STATUS_READED
 )
 
+const (
+	// 聊天模式：单聊
+	MESSAGE_MODE_SINGLE int = iota + 1
+	// 聊天模式: 群聊
+	MESSAGE_MODE_GROUP
+)
+
 // 消息体核心model
 type Message struct {
 	Id                int64  `xorm:"pk autoincr bigint not null comment('消息id')" json:"id,omitempty" form:"id"`

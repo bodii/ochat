@@ -15,7 +15,8 @@ func main() {
 
 	http.HandleFunc("/user/login", controllers.Login)
 	http.HandleFunc("/user/signup", controllers.Register)
-	http.HandleFunc(systemConf.Avatar.Uri, controllers.ImgShow)
+	http.HandleFunc("/user/avatar", controllers.ShowAvatar)
+	http.HandleFunc("/user/avatar/upload", controllers.UpPicture)
 
 	servConf := systemConf.Serv
 	http.ListenAndServe(

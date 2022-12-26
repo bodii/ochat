@@ -58,13 +58,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if avatar == "" {
+		avatar = bootstrap.HTTP_Avatar_URI
 		switch sex {
 		case 1:
-			avatar = "avatar_boy_kid_person_icon.png"
+			avatar += "avatar_boy_kid_person_icon.png"
 		case 2:
-			avatar = "child_girl_kid_person_icon.png"
+			avatar += "child_girl_kid_person_icon.png"
 		default:
-			avatar = "avatar_boy_male_user_young_icon.png"
+			avatar += "avatar_boy_male_user_young_icon.png"
 		}
 	}
 
