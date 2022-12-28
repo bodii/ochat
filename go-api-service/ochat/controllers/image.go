@@ -6,6 +6,7 @@ import (
 	"ochat/bootstrap"
 	"ochat/comm"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -44,8 +45,7 @@ func UpPicture(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	filename := fileHeader.Filename
-	suffix := strings.SplitAfter(fileHeader.Filename, ".")
-	name := comm.GetRandFileName(suffix[1])
+	name := comm.GetRandFileName(filepath.Ext(filename))
 	avatarConf := bootstrap.SystemConf.Avatar
 	filepath := bootstrap.PROJECT_DIR + avatarConf.UploadDir + name
 

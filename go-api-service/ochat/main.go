@@ -19,8 +19,7 @@ func main() {
 	http.HandleFunc("/user/signup", controllers.Register)
 	http.HandleFunc("/user/avatar", controllers.ShowAvatar)
 	http.HandleFunc("/user/avatar/upload", controllers.UpPicture)
-	http.HandleFunc("/chat", controllers.Chat)
-	http.Handle("/chat_web", websocket.Handler(controllers.EchoServer))
+	http.Handle("/chat", websocket.Handler(controllers.Chat))
 
 	servConf := systemConf.Serv
 	http.ListenAndServe(

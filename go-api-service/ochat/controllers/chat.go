@@ -1,11 +1,8 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"ochat/bootstrap"
 	"ochat/comm"
 	"ochat/models"
 	"ochat/service"
@@ -13,51 +10,58 @@ import (
 	"sync"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/gorilla/websocket"
+	"golang.org/x/net/websocket"
 )
 
 var rwMut sync.RWMutex
 
 type Node struct {
-	Conn *websocket.Conn
+	WsConn *websocket.Conn
 	// 并行转串行，
-	DataQueue chan []byte
+	DataQueue chan models.Message
 	GroupSets mapset.Set[int64]
 }
 
 var clientMap map[int64]*Node = make(map[int64]*Node)
 
-func Chat(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+// chat the data received on the WebSocket.
+func Chat(ws *websocket.Conn) {
+	// log.Printf("location: %v\n", ws.Config().Location)
+	// log.Printf("origin: %v\n", ws.Config().Origin)
+	r := ws.Request()
 	userIdStr := r.FormValue("user_id")
 	token := r.FormValue("token")
-
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
-		comm.Res(w, 1001, err.Error(), nil)
+		websocket.JSON.Send(ws, &comm.R{
+			Code: 1001,
+			Msg:  "user info err",
+		})
+		ws.Close()
 		return
 	}
-
 	if token == "" {
-		comm.Res(w, 1002, "token is empty", nil)
+		websocket.JSON.Send(ws, &comm.R{
+			Code: 1001,
+			Msg:  "token info err",
+		})
+		ws.Close()
 		return
 	}
 
-	isValida := checkToken(userId, token)
-
-	conn, err := (&websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return isValida
-		},
-	}).Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("websocket err:%v", err)
+	isValida := service.NewUserServ().CheckToken(userId, token)
+	if !isValida {
+		websocket.JSON.Send(ws, &comm.R{
+			Code: 1001,
+			Msg:  "token valida failure",
+		})
+		ws.Close()
 		return
 	}
 
 	node := &Node{
-		Conn:      conn,
-		DataQueue: make(chan []byte, 50),
+		WsConn:    ws,
+		DataQueue: make(chan models.Message),
 		GroupSets: mapset.NewSet[int64](),
 	}
 
@@ -65,29 +69,19 @@ func Chat(w http.ResponseWriter, r *http.Request) {
 	clientMap[userId] = node
 	rwMut.Unlock()
 
-	// 发送
-	go sendProc(node)
-
-	sendMessage(userId, []byte("Hello, world"))
-
+	// 接收
+	go recvproc(node)
 }
 
 // 处理
-func dispatch(data []byte) (err error) {
-	// 解析data为message
-	message := models.Message{}
-
-	err = json.Unmarshal(data, &message)
-	if err != nil {
-		return err
-	}
+func dispatch(data models.Message) (err error) {
 	// 根据message的模式处理
-	switch message.Mode {
+	switch data.Mode {
 	case models.MESSAGE_MODE_SINGLE:
-		sendMessage(message.ReceiverId, data)
+		sendMessage(data.ReceiverId, data)
 	case models.MESSAGE_MODE_GROUP:
 		// 是否还存在连接
-		sendGroupMessage(message.ReceiverId, data)
+		sendGroupMessage(data.ReceiverId, data)
 	}
 
 	return nil
@@ -96,45 +90,37 @@ func dispatch(data []byte) (err error) {
 var rowlocker sync.RWMutex
 
 // 发送信息
-func sendMessage(userId int64, msg []byte) {
+func sendMessage(userId int64, data models.Message) {
 	rowlocker.RLock()
 	node, ok := clientMap[userId]
 	rowlocker.RUnlock()
 	if ok {
-		node.DataQueue <- msg
+		node.DataQueue <- data
 	}
 }
 
 // 发送群信息
-func sendGroupMessage(userId int64, msg []byte) {
+func sendGroupMessage(userId int64, data models.Message) {
 	for _, v := range clientMap {
 		if v.GroupSets.Contains(userId) {
-			v.DataQueue <- msg
+			v.DataQueue <- data
 		}
 	}
-}
-
-func checkToken(userId int64, token string) bool {
-	userServ := &service.UserService{
-		DB: bootstrap.DB_Engine,
-	}
-
-	return userServ.CheckToken(userId, token)
 }
 
 // 接收协程
 func recvproc(node *Node) {
 	for {
-		msgType, data, err := node.Conn.ReadMessage()
-		if err != nil {
-			log.Println(err.Error())
+		var data models.Message
+		if err := websocket.JSON.Receive(node.WsConn, &data); err != nil {
+			fmt.Println(err.Error())
 			return
 		}
 
 		go dispatch(data)
 
 		// 对data进行进一步的处理
-		fmt.Printf("recv<-:%v type:\n", data, msgType)
+		fmt.Printf("recv<-:%v \n", data)
 	}
 }
 
@@ -143,7 +129,7 @@ func sendProc(node *Node) {
 	for {
 		select {
 		case data := <-node.DataQueue:
-			err := node.Conn.WriteMessage(websocket.TextMessage, data)
+			err := websocket.JSON.Send(node.WsConn, data)
 			if err != nil {
 				log.Println(err.Error())
 				return

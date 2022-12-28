@@ -15,6 +15,12 @@ type UserService struct {
 	DB *xorm.Engine
 }
 
+func NewUserServ() *UserService {
+	return &UserService{
+		DB: bootstrap.DB_Engine,
+	}
+}
+
 func (s *UserService) Register(
 	mobile, username, avatar, nickname, password string,
 	sex int) (user models.User, err error) {
