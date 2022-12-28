@@ -29,8 +29,8 @@ var clientMap map[int64]*Node = make(map[int64]*Node)
 
 func Chat(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	userIdStr := r.PostFormValue("user_id")
-	token := r.PostFormValue("token")
+	userIdStr := r.FormValue("user_id")
+	token := r.FormValue("token")
 
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
