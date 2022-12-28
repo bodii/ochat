@@ -60,11 +60,11 @@ type Message struct {
 	Content           string `xorm:"mediumtext not null comment('消息内容')" json:"content,omitempty" form:"content"`
 	Pic               string `xorm:"varchar(220) not null comment('预览图片')" json:"pic,omitempty" form:"pic"`
 	Url               string `xorm:"varchar(220) not null comment('服务的url')" json:"url,omitempty" form:"url"`
-	About             string `xorm:"varchar(220) not null default '' comment '简单描述'" json:"about" form:"about"`
+	About             string `xorm:"varchar(220) not null default '' comment '简单描述'" json:"about,omitempty" form:"about"`
 	Amount            int    `xorm:"int not null default 0 comment('金额')" json:"amount,omitempty" form:"amount"`
-	SenderStatus      int    `xorm:"tinyint index('message_sender_status') not null default 1 comment('发送者状态,-1:撤回;0:删除;1:成功（默认）;2:锁定（不可再撤回）;')" json:"sender_status" form:"sender_status"`
-	ReceiverStatus    int    `xorm:"tinyint index('message_receiver_status') not null default 0 comment('接收者状态,-1:删除;0:未读;1:已读')" json:"receiver_status" form:"receiver_status"`
-	CreatedAt         int    `xorm:"datetime(6) not null comment('创建时间')" json:"created_at" form:"created_at"`
-	SenderUpdatedAt   int    `xorm:"datetime(6) not null comment('发送者更新时间')" json:"sender_updated_at" form:"sender_updated_at"`
-	ReceiverUpdatedAt int    `xorm:"datetime(6) not null comment('接收者更新时间')" json:"receiver_updated_at" form:"receiver_updated_at"`
+	SenderStatus      int    `xorm:"tinyint index('message_sender_status') not null default 1 comment('发送者状态,-1:撤回;0:删除;1:成功（默认）;2:锁定（不可再撤回）;')" json:"sender_status,omitempty" form:"sender_status"`
+	ReceiverStatus    int    `xorm:"tinyint index('message_receiver_status') not null default 0 comment('接收者状态,-1:删除;0:未读;1:已读')" json:"receiver_status,omitempty" form:"receiver_status"`
+	CreatedAt         int    `xorm:"datetime(6) not null comment('创建时间')" json:"created_at,omitempty" form:"created_at"`
+	SenderUpdatedAt   int    `xorm:"datetime(6) not null comment('发送者更新时间')" json:"sender_updated_at,omitempty" form:"sender_updated_at"`
+	ReceiverUpdatedAt int    `xorm:"datetime(6) not null comment('接收者更新时间')" json:"receiver_updated_at,omitempty" form:"receiver_updated_at"`
 }
