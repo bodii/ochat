@@ -4,7 +4,7 @@ create table message (
     mode tinyint not null default 1 comment '模式,1:单聊;2:群聊',
     sender_id int not null default 0 comment '发送用户id',
     receiver_id bigint not null default 0 comment '接收方id, [mode=1]:对方id,[mode=2]:群id',
-    type tinyint not null default 1 comment '消息内容类型,1:文字;2:图片;3:表情;4:录音;5:名片;6:红包;7:音频文件;8:视频文件;9:接龙;',
+    type tinyint not null default 1 comment '消息内容类型,1:文字;2:图片;3:表情;4:录音;5:名片;6:红包;7:音频文件;8:视频文件;9:接龙;10:系统消息',
     content mediumtext not null  comment '消息内容，或实体(如图片)链接',
     pic varchar(220) not null default '' comment '预览图片',
     url varchar(220) not null default '' comment '服务的url',
