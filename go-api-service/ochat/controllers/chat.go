@@ -175,7 +175,7 @@ func (c *Client) sendGroupMessage(data models.Message) {
 // 发送系统信息
 func (c *Client) sendSystemMessage(userId int64, msg string) {
 	c.sendMessage(models.Message{
-		SenderId:   userId,
+		SenderId:   0,
 		ReceiverId: userId,
 		Mode:       1,
 		Type:       10,
