@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
+	"net/http"
 	"os"
 	"path"
 	"regexp"
@@ -208,4 +210,23 @@ func IsMobile(str string) bool {
 // returns: this is a number: true|false
 func IsNumber(str string) bool {
 	return regexp.MustCompile(`^\d+$`).Match([]byte(str))
+}
+
+func ClientIP(r *http.Request) string {
+	xForwardedFor := r.Header.Get("X-Forwarded-For")
+	ip := strings.TrimSpace(strings.Split(xForwardedFor, ",")[0])
+	if ip != "" {
+		return ip
+	}
+
+	ip = strings.TrimSpace(r.Header.Get("X-Real-Ip"))
+	if ip != "" {
+		return ip
+	}
+
+	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
+		return ip
+	}
+
+	return ""
 }

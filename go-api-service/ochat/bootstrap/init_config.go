@@ -19,9 +19,10 @@ func InitConfig() {
 
 // system config struct type
 type systemConfT struct {
-	App    appConfT    `yaml:"app"`
-	Serv   servConfT   `yaml:"server"`
-	Avatar avatarConfT `yaml:"avatar"`
+	App         appConfT     `yaml:"app"`
+	Serv        servConfT    `yaml:"server"`
+	Avatar      avatarConfT  `yaml:"avatar"`
+	LoginQRCode loginQRCodeT `yaml:"login_qrcode"`
 }
 
 // system->app config struct type
@@ -44,6 +45,13 @@ type avatarConfT struct {
 	SuffixName    string `yaml:"suffix_name"`
 	DefaultAvatar string `yaml:"default_avatar"`
 	UploadDir     string `yaml:"upload_dir"`
+}
+
+// system->login_qrcode config struct type
+type loginQRCodeT struct {
+	FileDir    string `yaml:"file_dir"`
+	Uri        string `yaml:"uri"`
+	SuffixName string `yaml:"suffix_name"`
 }
 
 // db mysql config struct type
