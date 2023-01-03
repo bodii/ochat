@@ -100,6 +100,7 @@ func ApplyList(w http.ResponseWriter, r *http.Request) {
 	users, err := service.NewApplyServ().List(userId, 0, 1)
 	if err != nil || len(users) == 0 {
 		comm.ResFailure(w, 1002, "the query is incorrect or does not exist")
+		return
 	}
 
 	comm.ResSuccess(w, users)
@@ -120,17 +121,20 @@ func ApplyDispose(w http.ResponseWriter, r *http.Request) {
 
 	if disposeIdStr == "" {
 		comm.ResFailure(w, 1002, "the dispose parameters dose not exists")
+		return
 	}
 
 	disposeId, err := strconv.Atoi(disposeIdStr)
 	if err != nil || disposeId < -1 || disposeId > 2 {
 		comm.ResFailure(w, 1003, "the dispose parameters are incorrect")
+		return
 	}
 
 	// status应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
 	ok, err := service.NewApplyServ().Set(id, disposeId)
 	if !ok || err != nil {
 		comm.ResFailure(w, 1004, "dispose are incorrect")
+		return
 	}
 
 	comm.ResSuccess(w, nil)

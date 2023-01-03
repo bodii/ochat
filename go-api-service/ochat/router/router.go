@@ -10,6 +10,10 @@ func Init() {
 	http.HandleFunc("/user/login", controllers.UserLogin)
 	// 用户注册
 	http.HandleFunc("/user/signup", controllers.UserRegister)
+	// 登录二维码
+	http.HandleFunc("/user/login_qrcode", controllers.LoginQRCode)
+	// 扫描登录二维码
+	http.HandleFunc("/user/scan_login_qrcode", controllers.LoginQRCodeScan)
 
 	// 头像显示
 	http.HandleFunc("/avatar/show", controllers.AvatarShow)
