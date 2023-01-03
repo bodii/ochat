@@ -13,3 +13,8 @@ avatar:
   suffix_name: .png
   default_avatar: avatar_boy_male_user_young_icon
   upload_dir: /files/upload/avatar/
+
+login_qrcode:
+  file_dir: /files/upload/login_qrcode
+  uri: /files/qrcode/
+  suffix_name: .png
