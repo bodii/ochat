@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -188,4 +189,23 @@ func GetRandFileName(suffix string) string {
 		time.Now().Unix(),
 		GetUnixNanoRandSeed().Int31(),
 		suffix)
+}
+
+// IsMobile func
+//
+// param: str string
+//
+// returns this is a mobile: true|false
+func IsMobile(str string) bool {
+	return regexp.MustCompile(`^(1[3|4|5|7|8|9]\d{9})$`).
+		Match([]byte(str))
+}
+
+// IsNumber func
+//
+// param: str string
+//
+// returns: this is a number: true|false
+func IsNumber(str string) bool {
+	return regexp.MustCompile(`^\d+$`).Match([]byte(str))
 }

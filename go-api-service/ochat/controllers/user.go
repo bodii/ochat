@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func UserLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	userServ := &service.UserService{
@@ -20,19 +20,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	userInfo, err := userServ.Login(mobile, password)
 	if err != nil {
-		comm.Res(w, 1001, err.Error(), nil)
+		comm.ResFailure(w, 1001, err.Error())
 		return
 	}
 
 	if userInfo.Id == 0 {
-		comm.Res(w, 1002, "failure: user data is empty", nil)
+		comm.ResFailure(w, 1002, "failure: user data is empty")
 		return
 	}
 
-	comm.Res(w, 200, "success", userInfo)
+	comm.ResSuccess(w, userInfo)
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
+func UserRegister(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	mobile := r.Form.Get("mobile")
@@ -43,17 +43,17 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	sex, _ := strconv.Atoi(r.FormValue("sex"))
 
 	if mobile == "" {
-		comm.Res(w, 1001, "register failure: mobile is empty!", nil)
+		comm.ResFailure(w, 1001, "register failure: mobile is empty!")
 		return
 	}
 
 	if username == "" {
-		comm.Res(w, 1002, "register failure: username is empty!", nil)
+		comm.ResFailure(w, 1002, "register failure: username is empty!")
 		return
 	}
 
 	if passwd == "" {
-		comm.Res(w, 1003, "register failure: password is empty!", nil)
+		comm.ResFailure(w, 1003, "register failure: password is empty!")
 		return
 	}
 
@@ -79,14 +79,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	userInfo, err := userServ.Register(mobile, username, avatar, nickname, passwd, sex)
 	if err != nil {
-		comm.Res(w, 1001, "register failure: "+err.Error(), nil)
+		comm.ResFailure(w, 1001, "register failure: "+err.Error())
 		return
 	}
 
 	if userInfo.Id == 0 {
-		comm.Res(w, 1001, "register failure: not insert data", nil)
+		comm.ResFailure(w, 1001, "register failure: not insert data")
 		return
 	}
 
-	comm.Res(w, 200, "register success", userInfo)
+	comm.ResSuccess(w, userInfo)
 }

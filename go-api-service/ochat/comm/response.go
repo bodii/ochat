@@ -6,14 +6,22 @@ import (
 	"net/http"
 )
 
-type R struct {
+type ResType struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
 	Data any    `json:"data,omitempty"`
 }
 
+func ResFailure(w http.ResponseWriter, code int, msg string) {
+	Res(w, code, msg, nil)
+}
+
+func ResSuccess(w http.ResponseWriter, data any) {
+	Res(w, 200, "success!", data)
+}
+
 func Res(w http.ResponseWriter, code int, msg string, data any) {
-	result := R{
+	result := ResType{
 		Code: code,
 		Msg:  msg,
 		Data: data,

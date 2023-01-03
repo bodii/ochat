@@ -87,7 +87,7 @@ func GetUserClient(userId int64) *Client {
 }
 
 func WsRespFailute(ws *websocket.Conn, code int, msg string) {
-	websocket.JSON.Send(ws, &comm.R{
+	websocket.JSON.Send(ws, &comm.ResType{
 		Code: code,
 		Msg:  msg,
 	})
@@ -117,14 +117,14 @@ func (c *Client) sendProc() {
 	for {
 		data := <-c.DataQueue
 		fmt.Printf("send-> %s: %#v\n", c.WsConn.Request().RemoteAddr, data)
-		err := websocket.JSON.Send(c.WsConn, &comm.R{
+		err := websocket.JSON.Send(c.WsConn, &comm.ResType{
 			Code: 1,
 			Msg:  "ok",
 			Data: data,
 		})
 		if err != nil {
 			fmt.Printf("sendProc: %#v\n", err.Error())
-			websocket.JSON.Send(c.WsConn, &comm.R{
+			websocket.JSON.Send(c.WsConn, &comm.ResType{
 				Code: 1001,
 				Msg:  "send failure",
 			})

@@ -6,7 +6,7 @@ const (
 	// 申请的类型: 好友
 	APPLY_TYPE_USER int = iota + 1
 	// 申请的类型: 群
-	APPLY_TYPE_COMMUNITY
+	APPLY_TYPE_GROUP
 )
 
 const (

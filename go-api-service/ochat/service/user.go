@@ -25,8 +25,7 @@ func (s *UserService) Register(
 	mobile, username, avatar, nickname, password string,
 	sex int) (user models.User, err error) {
 
-	userInfo := models.User{}
-	_, err = s.DB.Where("mobile = ?", mobile).Get(&userInfo)
+	userInfo, err := s.MobileToUserInfo(mobile)
 
 	if err == nil && userInfo.Id > 0 {
 		errStr := "the user to which the current mobile phone number belongs exists"
@@ -62,7 +61,7 @@ func (s *UserService) Register(
 }
 
 func (s *UserService) Login(mobile, password string) (user models.User, err error) {
-	_, err = s.DB.Where("mobile = ?", mobile).Get(&user)
+	user, err = s.MobileToUserInfo(mobile)
 	if err != nil {
 		return
 	}
@@ -79,7 +78,7 @@ func (s *UserService) Login(mobile, password string) (user models.User, err erro
 }
 
 func (s *UserService) UpToken(user_id int64) (user models.User, err error) {
-	_, err = s.DB.Where("id = ?", user_id).Get(&user)
+	user, err = s.UserIdToUserInfo(user_id)
 	if err != nil {
 		return user, err
 	}
@@ -100,8 +99,7 @@ func (s *UserService) UpToken(user_id int64) (user models.User, err error) {
 }
 
 func (s *UserService) CheckToken(user_id int64, token string) bool {
-	user := models.User{}
-	_, err := s.DB.Where("id = ?", user_id).Get(&user)
+	user, err := s.UserIdToUserInfo(user_id)
 	if err != nil || user.Id == 0 || user.Token == "" {
 		return false
 	}
@@ -111,4 +109,25 @@ func (s *UserService) CheckToken(user_id int64, token string) bool {
 	}
 
 	return true
+}
+
+func (s *UserService) MobileToUserInfo(mobile string) (models.User, error) {
+	var user models.User
+	_, err := s.DB.Where("mobile = ?", mobile).Get(&user)
+
+	return user, err
+}
+
+func (s *UserService) UserIdToUserInfo(userId int64) (models.User, error) {
+	var user models.User
+	_, err := s.DB.Where("id = ?", userId).Get(&user)
+
+	return user, err
+}
+
+func (s *UserService) UsernameToUserInfo(username string) (models.User, error) {
+	var user models.User
+	_, err := s.DB.Where("username = ?", username).Get(&user)
+
+	return user, err
 }

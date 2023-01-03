@@ -11,14 +11,14 @@ import (
 )
 
 // 显示头像图片
-func ShowAvatar(w http.ResponseWriter, r *http.Request) {
+func AvatarShow(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
 	fileNameIndex := strings.LastIndexByte(path, '/')
 	file := path[fileNameIndex+1:]
 	suffixIndex := strings.LastIndexByte(file, '.')
 	if suffixIndex < 1 {
-		comm.Res(w, 404, "file not exists!", nil)
+		comm.ResFailure(w, 404, "file not exists!")
 		return
 	}
 
@@ -27,7 +27,7 @@ func ShowAvatar(w http.ResponseWriter, r *http.Request) {
 	file_byte, err := os.Open(
 		comm.GetProjectDIR() + avatarConf.FileDir + filename + suffix)
 	if err != nil {
-		comm.Res(w, 1001, err.Error(), nil)
+		comm.ResFailure(w, 1001, err.Error())
 		return
 	}
 	defer file_byte.Close()
@@ -36,10 +36,10 @@ func ShowAvatar(w http.ResponseWriter, r *http.Request) {
 }
 
 // 上传头像图片
-func UpPicture(w http.ResponseWriter, r *http.Request) {
+func AvatarUpload(w http.ResponseWriter, r *http.Request) {
 	file, fileHeader, err := r.FormFile("img")
 	if err != nil {
-		comm.Res(w, 1001, err.Error(), nil)
+		comm.ResFailure(w, 1001, err.Error())
 		return
 	}
 	defer file.Close()
@@ -51,7 +51,7 @@ func UpPicture(w http.ResponseWriter, r *http.Request) {
 
 	savePath, err := os.Create(filepath)
 	if err != nil {
-		comm.Res(w, 1001, err.Error(), nil)
+		comm.ResFailure(w, 1001, err.Error())
 		return
 	}
 
@@ -59,5 +59,5 @@ func UpPicture(w http.ResponseWriter, r *http.Request) {
 
 	picUrl := bootstrap.HTTP_Avatar_URI + filename
 	result := map[string]any{"pic_url": picUrl}
-	comm.Res(w, 100, "update success!", result)
+	comm.ResSuccess(w, result)
 }

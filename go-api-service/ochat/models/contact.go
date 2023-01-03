@@ -6,7 +6,7 @@ const (
 	// 联系人类型: 单聊好友
 	CONTCAT_TYPE_USER int = iota + 1
 	// 联系人类型: 群聊的群
-	CONTCAT_TYPE_COMMUNITY
+	CONTCAT_TYPE_GROUP
 )
 
 const (
