@@ -9,6 +9,8 @@ require (
 	xorm.io/xorm v1.3.2
 )
 
+require github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
+
 require (
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
