@@ -60,3 +60,27 @@ func (a *ApplyService) List(userId int64, status, applyType int) ([]models.User,
 
 	return userInfos, err
 }
+
+// 设置/更新申请状态
+//
+// [param]
+//
+//	id: apply id
+//	status: 应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
+//
+// [return] whether to set up successfully
+func (a *ApplyService) Set(id int64, status int) (bool, error) {
+	updateData := models.Apply{
+		Status:    status,
+		UpdatedAt: time.Now(),
+	}
+
+	_, err := a.DB.Where("id = ?", id).
+		Cols("status", "UpdatedAt").
+		Update(&updateData)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

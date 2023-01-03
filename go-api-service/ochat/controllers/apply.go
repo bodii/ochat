@@ -108,25 +108,30 @@ func ApplyList(w http.ResponseWriter, r *http.Request) {
 // 处理向我申请好友
 func ApplyDispose(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	userIdStr := r.PostFormValue("userid")      // 当前用户id
-	friendIdStr := r.PostFormValue("friend_id") // 申请处理的用户id
+	idStr := r.PostFormValue("id")                // 当前用户id
+	disposeIdStr := r.PostFormValue("dispose_id") // 操作id 对应models.apply.APPLY_STATUS_REFUSE...
 
-	if userIdStr == "" || !comm.IsNumber(userIdStr) {
-		comm.ResFailure(w, 1001, "the user parameters to be added are incorrect")
+	if idStr == "" || !comm.IsNumber(idStr) {
+		comm.ResFailure(w, 1001, "the apply id parameters are incorrect")
 		return
 	}
 
-	if friendIdStr == "" || comm.IsNumber(friendIdStr) {
-		comm.ResFailure(w, 1002, "the user parameters to be added are incorrect")
-		return
+	id, _ := strconv.ParseInt(idStr, 10, 64)
+
+	if disposeIdStr == "" {
+		comm.ResFailure(w, 1002, "the dispose parameters dose not exists")
 	}
 
-	userId, _ := strconv.ParseInt(userIdStr, 10, 64)
+	disposeId, err := strconv.Atoi(disposeIdStr)
+	if err != nil || disposeId < -1 || disposeId > 2 {
+		comm.ResFailure(w, 1003, "the dispose parameters are incorrect")
+	}
+
 	// status应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
-	users, err := service.NewApplyServ().List(userId, 0, 1)
-	if err != nil || len(users) == 0 {
-		comm.ResFailure(w, 1002, "the query is incorrect or does not exist")
+	ok, err := service.NewApplyServ().Set(id, disposeId)
+	if !ok || err != nil {
+		comm.ResFailure(w, 1004, "dispose are incorrect")
 	}
 
-	comm.ResSuccess(w, users)
+	comm.ResSuccess(w, nil)
 }
