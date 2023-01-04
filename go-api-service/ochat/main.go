@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"ochat/bootstrap"
 	"ochat/router"
@@ -14,9 +13,5 @@ func main() {
 	router.Init()
 	router.WebsocketInit()
 
-	systemConf := bootstrap.SystemConf
-	servConf := systemConf.Serv
-	http.ListenAndServe(
-		fmt.Sprintf("%s:%d", servConf.Host, servConf.Port),
-		nil)
+	http.ListenAndServe(bootstrap.HOST_NAME, nil)
 }
