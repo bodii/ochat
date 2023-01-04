@@ -11,9 +11,13 @@ func Init() {
 	// 用户注册
 	http.HandleFunc("/user/signup", controllers.UserRegister)
 	// 登录二维码
-	http.HandleFunc("/user/login_qrcode", controllers.LoginQRCode)
+	http.HandleFunc("/user/login/qrcode", controllers.LoginQRCode)
 	// 扫描登录二维码
-	http.HandleFunc("/user/scan_login_qrcode", controllers.LoginQRCodeScan)
+	http.HandleFunc("/user/login/scan_qrcode", controllers.LoginQRCodeScan)
+	// 获取手机号的验证码
+	http.HandleFunc("/user/sms", controllers.PhoneSms)
+	// 验证手机验证码是否正确
+	http.HandleFunc("/user/sms/verify", controllers.PhoneSmsVerify)
 
 	// 头像显示
 	http.HandleFunc("/avatar/show", controllers.AvatarShow)
