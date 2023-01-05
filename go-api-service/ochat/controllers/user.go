@@ -25,6 +25,12 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		comm.ResFailure(w, 1002, "failure: user data is empty")
 		return
 	}
+	// 更新token
+	userInfo, err = service.NewUserServ().UpToken(userInfo.Id)
+	if err != nil {
+		comm.ResFailure(w, 1003, "failure: user data get failure")
+		return
+	}
 
 	comm.ResSuccess(w, userInfo)
 }
@@ -55,15 +61,23 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if avatar == "" {
-		avatar = bootstrap.HTTP_Avatar_URI
+		avatarConf := bootstrap.SystemConf.Avatar
+		staticAvatarPath := funcs.GetProjectDIR() + avatarConf.FileDir
 		switch sex {
 		case 1:
-			avatar += "avatar_boy_kid_person_icon.png"
+			staticAvatarPath += "avatar_boy_kid_person_icon.png"
 		case 2:
-			avatar += "child_girl_kid_person_icon.png"
+			staticAvatarPath += "child_girl_kid_person_icon.png"
 		default:
-			avatar += "avatar_boy_male_user_young_icon.png"
+			staticAvatarPath += "avatar_boy_male_user_young_icon.png"
 		}
+
+		avatarFilename := funcs.RandFileName(".png")
+		newAvatarPath := funcs.GetProjectDIR() + avatarConf.UploadDir + avatarFilename
+		// copy file
+		funcs.CopyFile(newAvatarPath, staticAvatarPath)
+
+		avatar = service.AvatarImgUrl(avatarFilename)
 	}
 
 	if nickname == "" {
@@ -82,4 +96,28 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	comm.ResSuccess(w, userInfo)
+}
+
+func UserQrCode(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
+	// 如果二维码不存在，则创建
+	if userInfo.QrCode == "" {
+		qrCode, err := service.NewUserServ().CreateQrCode(userInfo)
+		if err != nil {
+			comm.ResFailure(w, 3001, "create qr code failure")
+			return
+		}
+
+		userInfo.QrCode = qrCode
+	}
+
+	comm.ResSuccess(w, comm.D{
+		"user_info": userInfo,
+	})
 }

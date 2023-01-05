@@ -3,7 +3,6 @@ package bootstrap
 import (
 	"fmt"
 	"log"
-	"ochat/comm/funcs"
 	"sync"
 
 	"github.com/go-redis/redis/v8"
@@ -38,7 +37,7 @@ func RedisOnceInit() *redis.Client {
 
 // read  cache.yaml config and set var
 func loadRedisListConfig() redisListConfT {
-	return funcs.ReadYamlConfig[redisListConfT]("redis.yaml")
+	return readYamlConfig[redisListConfT]("redis.yaml")
 }
 
 func initRedis() {

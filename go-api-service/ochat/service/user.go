@@ -3,9 +3,12 @@ package service
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
 	"ochat/bootstrap"
 	"ochat/comm/funcs"
 	"ochat/models"
+	"strconv"
 	"time"
 
 	"xorm.io/xorm"
@@ -26,7 +29,7 @@ func (s *UserService) Register(
 	sex int) (user models.User, err error) {
 
 	userInfo, err := s.MobileToUserInfo(mobile)
-
+	// 信息验证
 	if err == nil && userInfo.Id > 0 {
 		errStr := "the user to which the current mobile phone number belongs exists"
 		return userInfo, errors.New(errStr)
@@ -35,31 +38,22 @@ func (s *UserService) Register(
 	salt := funcs.RandStr(12, funcs.Rand_Str_Level_5)
 	token := funcs.GenerateToken(password + salt)
 
-	avatar = fmt.Sprintf("%s%s", bootstrap.HTTP_Avatar_URI, avatar)
-
-	// 获取昵称前缀
-	nicknamePrefix := funcs.StrPrefix(nickname, 1, 2)
-	// 如果前缀首个字符不是英文或中文，则返回＃
-	if !funcs.IsEnglish(nicknamePrefix) {
-		nicknamePrefix = "#"
-	}
-
+	// 构建用户数据
 	userInfo = models.User{
-		Mobile:         mobile,
-		Username:       username,
-		Avatar:         avatar,
-		Nickname:       nickname,
-		NicknamePrefix: nicknamePrefix,
-		Sex:            sex,
-		Password:       funcs.GeneratePasswd(password, salt),
-		Salt:           salt,
-		Token:          token,
-		About:          "",
-		Status:         1,
-		Created_at:     time.Now(),
-		Updated_at:     time.Now(),
+		Mobile:     mobile,
+		Username:   username,
+		Avatar:     avatar,
+		Nickname:   nickname,
+		Sex:        sex,
+		Password:   funcs.GeneratePasswd(password, salt),
+		Salt:       salt,
+		Token:      token,
+		Status:     1,
+		Created_at: time.Now(),
+		Updated_at: time.Now(),
 	}
 
+	// 保存数据
 	if num, err := s.DB.InsertOne(&userInfo); err != nil || num <= 0 {
 		errStr := "user data insert database failure"
 		return userInfo, errors.New(errStr)
@@ -138,4 +132,74 @@ func (s *UserService) UsernameToUserInfo(username string) (models.User, error) {
 	_, err := s.DB.Where("username = ?", username).Get(&user)
 
 	return user, err
+}
+
+func (s *UserService) CheckUserRequestLegal(r *http.Request) (userInfo models.User, code int, errStr string) {
+	userIdStr := r.FormValue("user_id") // 用户id
+	token := r.FormValue("token")       // 用户token
+
+	if userIdStr == "" || !funcs.IsNumber(userIdStr) {
+		return userInfo, 101, "the user id params is empty or is illegal"
+	}
+
+	if token == "" {
+		return userInfo, 102, "the user token params is empty"
+	}
+
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		return userInfo, 103, "the user id params is illegal"
+	}
+
+	userInfo, err = s.UserIdToUserInfo(userId)
+	if err != nil || userInfo.Id == 0 {
+		return userInfo, 104, "user are dose not exists"
+	}
+
+	// 验证token是否合法
+	if userInfo.Token != token {
+		return userInfo, 105, "token parameter validation failed"
+	}
+
+	return
+}
+
+func (s *UserService) CreateQrCode(user models.User) (filename string, err error) {
+	// 生成二维码
+	qrCodeUrl := QrCodeOutUrl(user.Id)
+	qrCodeFile, err := funcs.QrCode(qrCodeUrl)
+	if err != nil {
+		return "", err
+	}
+
+	user.QrCode = QrCodeImgUrl(qrCodeFile.Name())
+
+	num, err := s.DB.ID(user.Id).Cols("qr_code").Update(&user)
+	if err != nil || num < 1 {
+		return "", errors.New("update failure")
+	}
+
+	return user.QrCode, nil
+}
+
+func QrCodeOutUrl(userId int64) string {
+	return fmt.Sprintf("%s/user?user_id=%d", bootstrap.HTTP_HOST, userId)
+}
+
+func QrCodeImgUrl(filename string) string {
+	imgUrl, err := url.JoinPath(bootstrap.HTTP_HOST, bootstrap.SystemConf.UserQRCode.Uri, filename)
+	if err != nil {
+		return ""
+	}
+
+	return imgUrl
+}
+
+func AvatarImgUrl(filename string) string {
+	imgUrl, err := url.JoinPath(bootstrap.HTTP_HOST, bootstrap.SystemConf.Avatar.Uri, filename)
+	if err != nil {
+		return ""
+	}
+
+	return imgUrl
 }

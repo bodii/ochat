@@ -17,5 +17,10 @@ avatar:
 
 login_qrcode:
   file_dir: /files/upload/login_qrcode
-  uri: /files/qrcode/
+  uri: /files/login/qrcode/
+  suffix_name: .png
+
+user_qrcode:
+  file_dir: /files/upload/user_qrcode
+  uri: /files/user/qrcode/
   suffix_name: .png

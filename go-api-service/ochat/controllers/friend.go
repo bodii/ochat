@@ -9,37 +9,56 @@ import (
 
 // 好友 - 列表
 func FriendList(w http.ResponseWriter, r *http.Request) {
-	userIdStr := r.FormValue("user_id") // 用户id
-	token := r.FormValue("token")       // 用户token
-	statusStr := r.FormValue("status")  // 获取指定状态的好友列表： -1:屏蔽;0:黑名单;1:好友;2:置顶'
-
-	if userIdStr == "" || token == "" || statusStr == "" {
-		comm.ResFailure(w, 1001, "the user params is empty")
+	// verify user legal
+	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
 		return
 	}
 
-	userId, _ := strconv.ParseInt(userIdStr, 10, 64)
-	userInfo, err := service.NewUserServ().UserIdToUserInfo(userId)
-	if err != nil {
-		comm.ResFailure(w, 1002, "user are dose not exists")
-		return
-	}
+	statusStr := r.FormValue("status") // 获取指定状态的好友列表： -1:屏蔽;0:黑名单;1:好友;2:置顶'
 
-	// 验证token是否合法
-	if userInfo.Token != token {
-		comm.ResFailure(w, 1003, "token parameter validation failed")
+	if statusStr == "" {
+		comm.ResFailure(w, 1001, "the status params is empty")
 		return
 	}
 
 	status, _ := strconv.Atoi(statusStr)
 
-	users, err := service.NewFriendServ().List(userId, status)
+	users, err := service.NewFriendServ().List(userInfo.Id, status)
 	if err != nil || len(users) == 0 {
 		comm.ResFailure(w, 2001, "not exists")
 		return
 	}
 
 	comm.ResSuccess(w, users)
+}
+
+func FriendAdd(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
+	r.ParseForm()
+	friendIdStr := r.PostFormValue("friend_id")    // 好友id
+	friendAlias := r.PostFormValue("friend_alias") // 好友别称
+	about := r.PostFormValue("about")              // 描述
+
+	friendId, _ := strconv.ParseInt(friendIdStr, 10, 64)
+	friendInfo, err := service.NewFriendServ().
+		Add(userInfo.Id, friendId, friendAlias, about)
+	if err != nil {
+		comm.ResFailure(w, 2001, "add friend failute")
+		return
+	}
+
+	comm.ResSuccess(w, comm.D{
+		"user_info":   userInfo,
+		"friend_info": friendInfo,
+	})
 }
 
 // 好友 - 设置黑名单

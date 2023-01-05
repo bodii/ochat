@@ -50,43 +50,39 @@ func PhoneSms(w http.ResponseWriter, r *http.Request) {
 
 // verify that the mobile phone verification code is valid
 func PhoneSmsVerify(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
 	phone := r.FormValue("phone")            // 手机号
-	userIdStr := r.FormValue("user_id")      // 用户id
-	token := r.FormValue("token")            // 用户token
 	verifyCode := r.FormValue("verify_code") // 验证码
 
-	if userIdStr == "" || token == "" || verifyCode == "" {
-		comm.ResFailure(w, 1001, "the user params is empty")
-		return
+	if phone == "" || !funcs.IsMobile(phone) {
+		comm.ResFailure(w, 1001, "the phone params is empty or is illegal")
 	}
 
-	userId, _ := strconv.ParseInt(userIdStr, 10, 64)
-	userInfo, err := service.NewUserServ().UserIdToUserInfo(userId)
-	if err != nil {
-		comm.ResFailure(w, 1002, "user are dose not exists")
-		return
-	}
-
-	// token是否合法
-	if userInfo.Token != token {
-		comm.ResFailure(w, 1003, "token parameter validation failed")
+	if verifyCode == "" {
+		comm.ResFailure(w, 1002, "the verify code params is empty")
 		return
 	}
 
 	// 查看缓存中是否存在
-	code, err := service.NewRedis().Get(service.REDIS_CTX, phone).Result()
+	phoneCode, err := service.NewRedis().Get(service.REDIS_CTX, phone).Result()
 	// 如果不存在
 	if err != nil {
-		comm.ResFailure(w, 1004, "verify code are dose not exists or defunct")
+		comm.ResFailure(w, 1003, "verify code are dose not exists or defunct")
 		return
 	}
 
 	// 验证码错误
-	if verifyCode != code {
-		comm.ResFailure(w, 1005, "verify code are incorrect")
+	if verifyCode != phoneCode {
+		comm.ResFailure(w, 1004, "verify code are incorrect")
 		return
 	}
 
 	// 返回成功
-	comm.ResSuccess(w, nil)
+	comm.ResSuccess(w, userInfo)
 }

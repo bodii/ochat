@@ -5,7 +5,6 @@ import (
 	"ochat/comm"
 	"ochat/models"
 	"ochat/service"
-	"strconv"
 	"sync"
 
 	mapset "github.com/deckarep/golang-set/v2"
@@ -28,34 +27,23 @@ func Chat(ws *websocket.Conn) {
 	// log.Printf("location: %v\n", ws.Config().Location)
 	// log.Printf("origin: %v\n", ws.Config().Origin)
 	r := ws.Request()
-	userIdStr := r.FormValue("user_id")
-	token := r.FormValue("token")
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
-	if err != nil {
-		WsRespFailute(ws, 1001, "user info err")
-		return
-	}
-	if token == "" {
-		WsRespFailute(ws, 1001, "token info err")
+	// verify user legal
+	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		WsRespFailute(ws, code, errStr)
 		return
 	}
 
-	isValida := service.NewUserServ().CheckToken(userId, token)
-	if !isValida {
-		WsRespFailute(ws, 1001, "token valida failure")
-		return
-	}
-
-	client := NewWsCline(ws, userId)
+	client := NewWsCline(ws, userInfo.Id)
 
 	// 接收
 	go client.recvProc()
 	// 发送
 	go client.sendProc()
 
-	client.sendSystemMessage(userId, "hello, welcome you")
+	client.sendSystemMessage(userInfo.Id, "hello, welcome you")
 
-	fmt.Printf("\nwebSocket 与客户端建立连接: %#v  senderId: %d\n\n", ws.Request().RemoteAddr, userId)
+	fmt.Printf("\nwebSocket 与客户端建立连接: %#v  senderId: %d\n\n", ws.Request().RemoteAddr, userInfo.Id)
 	client.sendProc()
 }
 

@@ -4,17 +4,17 @@ create table user (
     mobile varchar(20) unique not null default '' comment '手机号',
     username varchar(25) unique not null default '' comment '用户名',
     nickname varchar(30) not null default '' comment '用户昵称',
-    nickname_prefix varchar(2) not null default '' comment '用户昵称前缀(e.g 刘:L)',
+    qr_code varchar(200) not null default '' comment '二维码',
     password varchar(40) not null default '' comment '密码',
     about varchar(250) not null default '' comment '简单描述',
     token varchar(50) not null default '' comment '用户的token',
     salt varchar(40) not null default '' comment '盐',
     avatar varchar(160) not null default '' comment '头像',
     sex tinyint not null default 0 comment '性别,0:无;1:男;2:女;',
+    birthday date not null comment '生日',
     online bigint not null default 0 comment '在线时长',
     status tinyint not null default 1 comment '状态是否可用, 1:可用;0:冻结',
     created_at datetime(6) not null comment '创建时间',
     updated_at datetime(6) not null comment '更新时间',
-    key user_status(status),
-    key user_nickname_prefix(nickname_prefix)
+    key user_status(status)
 ) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '接入鉴权/用户信息表';

@@ -2,13 +2,14 @@ package funcs
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"ochat/bootstrap"
 	"os"
 	"path"
-	"strings"
 	"time"
 
-	"gopkg.in/yaml.v3"
+	"github.com/skip2/go-qrcode"
 )
 
 func GetProjectDIR() string {
@@ -19,30 +20,6 @@ func GetProjectDIR() string {
 	}
 
 	return dir
-}
-
-// Read the configuration content of a yaml file type
-// Parmas: [file string] filename
-// Returns: Specifies a structure of type [T]
-func ReadYamlConfig[T any](file string) T {
-	if 1 > strings.LastIndex(file, ".yaml") {
-		panic("input file name not is yaml file")
-	}
-
-	configPath := path.Join(GetProjectDIR(), "config/"+file)
-	content, _ := os.ReadFile(configPath)
-
-	var t T
-	err := yaml.Unmarshal(content, &t)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	filename := strings.TrimSuffix(file, ".yaml")
-
-	log.Printf("read %s config succuee!", filename)
-
-	return t
 }
 
 // RandFileName func
@@ -56,4 +33,41 @@ func RandFileName(suffix string) string {
 		time.Now().Unix(),
 		GetUnixNanoRandSeed().Int31(),
 		suffix)
+}
+
+func QrCode(url string) (*os.File, error) {
+	QRCodeConf := bootstrap.SystemConf.LoginQRCode
+	filename := RandFileName(".png")
+	filePath := path.Join(GetProjectDIR(), QRCodeConf.FileDir, filename)
+	err := qrcode.WriteFile(url, qrcode.Medium, 256, filePath)
+	if err != nil {
+		log.Printf(" %s create login qrcode failure\n", url)
+		return nil, err
+	}
+
+	return os.Open(filePath)
+}
+
+func CopyFile(dst string, src string) error {
+	// open src file
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+
+	// create dst file
+	dstFile, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	// last close files
+	defer srcFile.Close()
+	defer dstFile.Close()
+
+	// copy
+	_, err = io.Copy(dstFile, srcFile)
+
+	// return
+	return err
 }

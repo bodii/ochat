@@ -6,6 +6,7 @@ import (
 	"ochat/bootstrap"
 	"ochat/comm"
 	"ochat/comm/funcs"
+	"ochat/service"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,13 @@ import (
 
 // 显示头像图片
 func AvatarShow(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
 	path := r.URL.Path
 
 	fileNameIndex := strings.LastIndexByte(path, '/')
@@ -38,6 +46,13 @@ func AvatarShow(w http.ResponseWriter, r *http.Request) {
 
 // 上传头像图片
 func AvatarUpload(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
 	file, fileHeader, err := r.FormFile("img")
 	if err != nil {
 		comm.ResFailure(w, 1001, err.Error())
@@ -58,7 +73,8 @@ func AvatarUpload(w http.ResponseWriter, r *http.Request) {
 
 	io.Copy(savePath, file)
 
-	picUrl := bootstrap.HTTP_Avatar_URI + filename
-	result := map[string]any{"pic_url": picUrl}
-	comm.ResSuccess(w, result)
+	avatarUrl := bootstrap.HTTP_HOST + bootstrap.SystemConf.Avatar.Uri + filename
+	comm.ResSuccess(w, comm.D{
+		"avatar_url": avatarUrl,
+	})
 }

@@ -12,6 +12,8 @@ type ResType struct {
 	Data any    `json:"data,omitempty"`
 }
 
+type D map[string]any
+
 func ResFailure(w http.ResponseWriter, code int, msg string) {
 	Res(w, code, msg, nil)
 }

@@ -1,4 +1,4 @@
-drop table if exists apply;
+drop table if exists sms_verify;
 create table sms_verify (
     id bigint not null auto_increment primary key comment '手机短信验证表id',
 	phone varchar(20) not null default 0 comment '手机号',

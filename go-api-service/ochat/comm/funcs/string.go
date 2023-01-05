@@ -43,22 +43,21 @@ const (
 // returns str 指定长度的前缀.
 func StrPrefix(str string, length int, p_type int) string {
 	strRune := []rune(str)
-	strPrefix := strRune[:length]
-
-	strPrefixStr := string(strPrefix)
+	strPrefix := string(strRune[:length])
 
 	enStr := ""
-	if IsChinese(strPrefixStr) {
-		enStrList := make([]string, 0)
-		for i, en := range pinyin.Pinyin(strPrefixStr, pinyin.NewArgs()) {
+	if IsChinese(strPrefix) {
+		pyStrLists := pinyin.Pinyin(strPrefix, pinyin.NewArgs())
+		enStrList := make([]string, len(pyStrLists))
+		for i, en := range pyStrLists {
 			enStrList[i] = en[0]
 		}
 
 		enStr = strings.Join(enStrList, "")[:length]
 	}
 
-	if IsEnglish(enStr) && p_type == 2 {
-		enStr = strings.ToUpper(enStr)
+	if IsEnglish(strPrefix) && p_type == 2 {
+		enStr = strings.ToUpper(strPrefix)
 	}
 
 	return enStr

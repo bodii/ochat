@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"ochat/comm/funcs"
 )
 
 var (
-	SystemConf      systemConfT
-	HOST_AUTHORITY  string   // domain:port e.g 127.0.0.1:8080
-	HTTP_HOST       string   // scheme://domain:port
-	HTTP_URL        *url.URL // return: url.URL struct
-	HTTP_Avatar_URI string   // scheme://domain:port/path/, no filename
+	SystemConf     systemConfT
+	HOST_AUTHORITY string   // domain:port e.g 127.0.0.1:8080
+	HTTP_HOST      string   // scheme://domain:port
+	HTTP_URL       *url.URL // return: url.URL struct
 	// system_init_once sync.Once
 )
 
@@ -30,6 +28,7 @@ type systemConfT struct {
 	Serv        servConfT    `yaml:"server"`
 	Avatar      avatarConfT  `yaml:"avatar"`
 	LoginQRCode loginQRCodeT `yaml:"login_qrcode"`
+	UserQRCode  UserQRCodeT  `yaml:"user_qrcode"`
 }
 
 // system->app config struct type
@@ -62,9 +61,16 @@ type loginQRCodeT struct {
 	SuffixName string `yaml:"suffix_name"`
 }
 
+// system->user_qrcode config struct type
+type UserQRCodeT struct {
+	FileDir    string `yaml:"file_dir"`
+	Uri        string `yaml:"uri"`
+	SuffixName string `yaml:"suffix_name"`
+}
+
 // read  system.yaml config and set var
 func initSystemConfig() {
-	SystemConf = funcs.ReadYamlConfig[systemConfT]("system.yaml")
+	SystemConf = readYamlConfig[systemConfT]("system.yaml")
 	servConf := SystemConf.Serv
 	HTTP_URL := &url.URL{
 		Scheme: servConf.Scheme,
@@ -72,8 +78,6 @@ func initSystemConfig() {
 	}
 	HOST_AUTHORITY = fmt.Sprintf("%s:%s", HTTP_URL.Hostname(), HTTP_URL.Port())
 	HTTP_HOST = HTTP_URL.String()
-
-	HTTP_Avatar_URI = fmt.Sprintf("%s%s", HTTP_HOST, SystemConf.Avatar.Uri)
 
 	log.Println("init system config success!")
 }

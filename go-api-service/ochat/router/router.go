@@ -10,18 +10,21 @@ func Init() {
 	http.HandleFunc("/user/login", controllers.UserLogin)
 	// 用户注册
 	http.HandleFunc("/user/signup", controllers.UserRegister)
-	// 登录二维码
-	http.HandleFunc("/user/login/qrcode", controllers.LoginQRCode)
-	// 扫描登录二维码
-	http.HandleFunc("/user/login/scan_qrcode", controllers.LoginQRCodeScan)
 	// 获取手机号的验证码
 	http.HandleFunc("/user/sms", controllers.PhoneSms)
 	// 验证手机验证码是否正确
 	http.HandleFunc("/user/sms/verify", controllers.PhoneSmsVerify)
+	// 用户二维码页
+	http.HandleFunc("/user/qr_code", controllers.UserQrCode)
 
-	// 头像显示
+	// 登录二维码(其它设备，生成)
+	http.HandleFunc("/user/login/qrcode", controllers.LoginQRCode)
+	// 扫描登录二维码(其它设备)
+	http.HandleFunc("/user/login/scan_qrcode", controllers.LoginQRCodeScan)
+
+	// 头像 - 显示
 	http.HandleFunc("/avatar/show", controllers.AvatarShow)
-	// 头像上传
+	// 头像 - 上传
 	http.HandleFunc("/avatar/upload", controllers.AvatarUpload)
 
 	// 申请好友 - 查找
@@ -35,4 +38,8 @@ func Init() {
 
 	// 好友 - 设置黑名单
 	http.HandleFunc("/friend/blacklist", controllers.FriendToBlacklist)
+	// 好友 - 列表
+	http.HandleFunc("/friend/list", controllers.FriendList)
+	// 好友 - 添加
+	http.HandleFunc("/friend/add", controllers.FriendAdd)
 }
