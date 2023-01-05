@@ -6,7 +6,7 @@ app:
 server:
   host: 127.0.0.1
   port: 8080
-  protocol: http
+  scheme: http
 
 avatar:
   file_dir: /files/static/avatar/default/

@@ -13,5 +13,5 @@ func main() {
 	router.Init()
 	router.WebsocketInit()
 
-	http.ListenAndServe(bootstrap.HOST_NAME, nil)
+	http.ListenAndServe(bootstrap.HOST_AUTHORITY, nil)
 }
