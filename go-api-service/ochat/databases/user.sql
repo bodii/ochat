@@ -3,7 +3,8 @@ create table user (
     id bigint not null auto_increment primary key comment '用户id,user_id',
     mobile varchar(20) unique not null default '' comment '手机号',
     username varchar(25) unique not null default '' comment '用户名',
-    nickname varchar(30) not null default '' comment '称呼',
+    nickname varchar(30) not null default '' comment '用户昵称',
+    nickname_prefix varchar(2) not null default '' comment '用户昵称前缀(e.g 刘:L)',
     password varchar(40) not null default '' comment '密码',
     about varchar(250) not null default '' comment '简单描述',
     token varchar(50) not null default '' comment '用户的token',
@@ -14,5 +15,6 @@ create table user (
     status tinyint not null default 1 comment '状态是否可用, 1:可用;0:冻结',
     created_at datetime(6) not null comment '创建时间',
     updated_at datetime(6) not null comment '更新时间',
-    key user_status(status) 
+    key user_status(status),
+    key user_nickname_prefix(nickname_prefix)
 ) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '接入鉴权/用户信息表';

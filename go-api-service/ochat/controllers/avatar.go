@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"ochat/bootstrap"
 	"ochat/comm"
+	"ochat/comm/funcs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,7 +26,7 @@ func AvatarShow(w http.ResponseWriter, r *http.Request) {
 	filename, suffix := file[:suffixIndex], file[suffixIndex:]
 	avatarConf := bootstrap.SystemConf.Avatar
 	file_byte, err := os.Open(
-		comm.GetProjectDIR() + avatarConf.FileDir + filename + suffix)
+		funcs.GetProjectDIR() + avatarConf.FileDir + filename + suffix)
 	if err != nil {
 		comm.ResFailure(w, 1001, err.Error())
 		return
@@ -45,7 +46,7 @@ func AvatarUpload(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	filename := fileHeader.Filename
-	name := comm.GetRandFileName(filepath.Ext(filename))
+	name := funcs.RandFileName(filepath.Ext(filename))
 	avatarConf := bootstrap.SystemConf.Avatar
 	filepath := bootstrap.PROJECT_DIR + avatarConf.UploadDir + name
 

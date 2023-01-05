@@ -2,8 +2,9 @@ package bootstrap
 
 import (
 	"fmt"
+	"log"
 	"net/url"
-	"ochat/comm"
+	"ochat/comm/funcs"
 )
 
 var (
@@ -63,7 +64,7 @@ type loginQRCodeT struct {
 
 // read  system.yaml config and set var
 func initSystemConfig() {
-	SystemConf = comm.ReadYamlConfig[systemConfT]("system.yaml")
+	SystemConf = funcs.ReadYamlConfig[systemConfT]("system.yaml")
 	servConf := SystemConf.Serv
 	HTTP_URL := &url.URL{
 		Scheme: servConf.Scheme,
@@ -73,4 +74,6 @@ func initSystemConfig() {
 	HTTP_HOST = HTTP_URL.String()
 
 	HTTP_Avatar_URI = fmt.Sprintf("%s%s", HTTP_HOST, SystemConf.Avatar.Uri)
+
+	log.Println("init system config success!")
 }

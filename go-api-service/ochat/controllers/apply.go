@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"ochat/comm"
+	"ochat/comm/funcs"
 	"ochat/models"
 	"ochat/service"
 	"strconv"
@@ -21,7 +22,7 @@ func ApplyFind(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	var condition string
-	if comm.IsMobile(usernameOrMobile) {
+	if funcs.IsMobile(usernameOrMobile) {
 		// 通过手机号查找
 		condition = "mobile = ?"
 	} else {
@@ -50,12 +51,12 @@ func ApplyAdd(w http.ResponseWriter, r *http.Request) {
 	addUserIdStr := r.PostFormValue("add_userid") // 被申请的用户
 	comment := r.PostFormValue("comment")         // 留言
 
-	if userIdStr == "" || comm.IsNumber(userIdStr) {
+	if userIdStr == "" || funcs.IsNumber(userIdStr) {
 		comm.ResFailure(w, 1001, "the user parameters to be added are incorrect")
 		return
 	}
 
-	if addUserIdStr == "" || comm.IsNumber(addUserIdStr) {
+	if addUserIdStr == "" || funcs.IsNumber(addUserIdStr) {
 		comm.ResFailure(w, 1002, "the user parameters to be added are incorrect")
 		return
 	}
@@ -90,7 +91,7 @@ func ApplyList(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userIdStr := r.PostFormValue("userid") // 当前用户id
 
-	if userIdStr == "" || !comm.IsNumber(userIdStr) {
+	if userIdStr == "" || !funcs.IsNumber(userIdStr) {
 		comm.ResFailure(w, 1001, "the user parameters to be added are incorrect")
 		return
 	}
@@ -112,7 +113,7 @@ func ApplyDispose(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PostFormValue("id")                // 当前用户id
 	disposeIdStr := r.PostFormValue("dispose_id") // 操作id 对应models.apply.APPLY_STATUS_REFUSE...
 
-	if idStr == "" || !comm.IsNumber(idStr) {
+	if idStr == "" || !funcs.IsNumber(idStr) {
 		comm.ResFailure(w, 1001, "the apply id parameters are incorrect")
 		return
 	}

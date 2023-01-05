@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"ochat/bootstrap"
 	"ochat/comm"
+	"ochat/comm/funcs"
 	"ochat/service"
 	"strconv"
 )
@@ -11,14 +12,10 @@ import (
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
-	userServ := &service.UserService{
-		DB: bootstrap.DB_Engine,
-	}
-
 	mobile := r.PostForm.Get("mobile")
 	password := r.PostForm.Get("password")
 
-	userInfo, err := userServ.Login(mobile, password)
+	userInfo, err := service.NewUserServ().Login(mobile, password)
 	if err != nil {
 		comm.ResFailure(w, 1001, err.Error())
 		return
@@ -70,14 +67,10 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if nickname == "" {
-		nickname = comm.RandStr(20, 5)
+		nickname = funcs.RandStr(20, 5)
 	}
 
-	userServ := &service.UserService{
-		DB: bootstrap.DB_Engine,
-	}
-
-	userInfo, err := userServ.Register(mobile, username, avatar, nickname, passwd, sex)
+	userInfo, err := service.NewUserServ().Register(mobile, username, avatar, nickname, passwd, sex)
 	if err != nil {
 		comm.ResFailure(w, 1001, "register failure: "+err.Error())
 		return

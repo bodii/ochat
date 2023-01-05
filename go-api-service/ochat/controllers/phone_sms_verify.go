@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"ochat/comm"
+	"ochat/comm/funcs"
 	"ochat/service"
 	"strconv"
 	"time"
@@ -36,7 +37,7 @@ func PhoneSms(w http.ResponseWriter, r *http.Request) {
 	verifyCode, err := service.NewRedis().Get(service.REDIS_CTX, phone).Result()
 	if err != nil {
 		// 如果不存在，则生成一个新的
-		verifyCode = comm.RandStr(6, 3)
+		verifyCode = funcs.RandStr(6, 3)
 		// 添加到缓存(前端默认3分钟有效)
 		service.NewRedis().SetEX(service.REDIS_CTX, phone, verifyCode, 4*time.Minute)
 	}

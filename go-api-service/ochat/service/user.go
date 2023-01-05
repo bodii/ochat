@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"ochat/bootstrap"
-	"ochat/comm"
+	"ochat/comm/funcs"
 	"ochat/models"
 	"time"
 
@@ -32,24 +32,32 @@ func (s *UserService) Register(
 		return userInfo, errors.New(errStr)
 	}
 
-	salt := comm.RandStr(12, comm.Rand_Str_Level_5)
-	token := comm.GenerateToken(password + salt)
+	salt := funcs.RandStr(12, funcs.Rand_Str_Level_5)
+	token := funcs.GenerateToken(password + salt)
 
 	avatar = fmt.Sprintf("%s%s", bootstrap.HTTP_Avatar_URI, avatar)
 
+	// 获取昵称前缀
+	nicknamePrefix := funcs.StrPrefix(nickname, 1, 2)
+	// 如果前缀首个字符不是英文或中文，则返回＃
+	if !funcs.IsEnglish(nicknamePrefix) {
+		nicknamePrefix = "#"
+	}
+
 	userInfo = models.User{
-		Mobile:     mobile,
-		Username:   username,
-		Avatar:     avatar,
-		Nickname:   nickname,
-		Sex:        sex,
-		Password:   comm.GeneratePasswd(password, salt),
-		Salt:       salt,
-		Token:      token,
-		About:      "",
-		Status:     1,
-		Created_at: time.Now(),
-		Updated_at: time.Now(),
+		Mobile:         mobile,
+		Username:       username,
+		Avatar:         avatar,
+		Nickname:       nickname,
+		NicknamePrefix: nicknamePrefix,
+		Sex:            sex,
+		Password:       funcs.GeneratePasswd(password, salt),
+		Salt:           salt,
+		Token:          token,
+		About:          "",
+		Status:         1,
+		Created_at:     time.Now(),
+		Updated_at:     time.Now(),
 	}
 
 	if num, err := s.DB.InsertOne(&userInfo); err != nil || num <= 0 {
@@ -70,7 +78,7 @@ func (s *UserService) Login(mobile, password string) (user models.User, err erro
 		return
 	}
 
-	if !comm.VaildataPasswd(password, user.Salt, user.Password) {
+	if !funcs.VaildataPasswd(password, user.Salt, user.Password) {
 		return models.User{}, errors.New("password vaildate failute")
 	}
 
@@ -87,7 +95,7 @@ func (s *UserService) UpToken(user_id int64) (user models.User, err error) {
 		return models.User{}, err
 	}
 
-	token := comm.GenerateToken(user.Password + user.Salt)
+	token := funcs.GenerateToken(user.Password + user.Salt)
 
 	user.Token = token
 	num, err := s.DB.ID(user_id).Cols("token").Update(&user)

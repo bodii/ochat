@@ -32,4 +32,7 @@ func Init() {
 	http.HandleFunc("/apply/list", controllers.ApplyList)
 	// 申请好友 - 操作
 	http.HandleFunc("/apply/dispose", controllers.ApplyDispose)
+
+	// 好友 - 设置黑名单
+	http.HandleFunc("/friend/blacklist", controllers.FriendToBlacklist)
 }

@@ -1,5 +1,5 @@
-drop table if exists group;
-create table group (
+drop table if exists `group`;
+create table `group` (
     id bigint not null auto_increment primary key comment '群表id',
 	name varchar(60) not null default '' comment '群名称',
 	manager_id bigint not null default 0 comment '群主user_id',

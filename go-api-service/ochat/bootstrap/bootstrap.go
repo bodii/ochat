@@ -1,11 +1,9 @@
 package bootstrap
 
-import (
-	"ochat/comm"
-)
+import "ochat/comm/funcs"
 
 var (
-	PROJECT_DIR = comm.GetProjectDIR()
+	PROJECT_DIR = funcs.GetProjectDIR()
 )
 
 func Init() {

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"ochat/bootstrap"
 	"ochat/comm"
+	"ochat/comm/funcs"
 	"ochat/service"
 	"os"
 	"path"
@@ -17,13 +18,13 @@ import (
 
 func LoginQRCode(w http.ResponseWriter, r *http.Request) {
 	htttpHost := bootstrap.HTTP_HOST
-	ip := comm.ClientIP(r)
+	ip := funcs.ClientIP(r)
 	loginUrl := fmt.Sprintf(
 		"%s/user/login_qrcode?ip=%s",
 		htttpHost, ip)
 
 	QRCodeConf := bootstrap.SystemConf.LoginQRCode
-	filename := comm.GetRandFileName(".png")
+	filename := funcs.RandFileName(".png")
 	filePath := path.Join(bootstrap.PROJECT_DIR, QRCodeConf.FileDir, filename)
 	err := qrcode.WriteFile(loginUrl, qrcode.Medium, 256, filePath)
 	// png, err := qrcode.Encode(loginUrl, qrcode.Medium, 256)

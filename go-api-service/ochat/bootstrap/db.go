@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"fmt"
 	"log"
-	"ochat/comm"
+	"ochat/comm/funcs"
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -39,7 +39,7 @@ func DBOnceInit() *xorm.Engine {
 
 // read  database.yaml config and set var
 func loadDatabaseConfig() {
-	mysqlConf = comm.ReadYamlConfig[mysqlConfT]("database.yaml")
+	mysqlConf = funcs.ReadYamlConfig[mysqlConfT]("database.yaml")
 }
 
 func initDbConnect() {
