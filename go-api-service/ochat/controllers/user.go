@@ -92,13 +92,12 @@ func UserQrCode(w http.ResponseWriter, r *http.Request) {
 
 	// 如果二维码不存在，则创建
 	if userInfo.QrCode == "" {
-		qrCode, err := service.NewUserServ().CreateQrCode(userInfo)
+		filename, err := service.NewUserServ().CreateQrCode(userInfo)
 		if err != nil {
 			comm.ResFailure(w, 3001, "create qr code failure")
 			return
 		}
-
-		userInfo.QrCode = qrCode
+		userInfo.QrCode = funcs.GetImgUrl("user_qrcode", filename)
 	}
 
 	comm.ResSuccess(w, comm.D{

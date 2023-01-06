@@ -15,7 +15,7 @@ func Init() {
 	// 验证手机验证码是否正确
 	http.HandleFunc("/user/sms/verify", controllers.PhoneSmsVerify)
 	// 用户二维码页
-	http.HandleFunc("/user/qr_code", controllers.UserQrCode)
+	http.HandleFunc("/user/qrcode", controllers.UserQrCode)
 
 	// 登录二维码(其它设备，生成)
 	http.HandleFunc("/user/login/qrcode", controllers.LoginQRCode)

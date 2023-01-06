@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"ochat/bootstrap"
@@ -12,20 +11,27 @@ import (
 )
 
 func LoginQRCode(w http.ResponseWriter, r *http.Request) {
-	htttpHost := bootstrap.HTTP_HOST
 	ip := funcs.ClientIP(r)
+	if ip == "" {
+		comm.ResFailure(w, 1001, "ip get failure")
+	}
+
+	htttpHost := bootstrap.HTTP_HOST
 	url := fmt.Sprintf(
 		"%s/user/login_qrcode?ip=%s",
 		htttpHost, ip)
 
-	QRCodeStream, err := funcs.QrCode(url)
+	filename, err := funcs.QrCode(url, "login_qrcode")
 	if err != nil {
 		log.Printf("open login qrcode file failure: %s", url)
 		comm.ResFailure(w, 1002, "get qrcode file failure")
 		return
 	}
 
-	io.Copy(w, QRCodeStream)
+	qrcodeUrl := funcs.GetImgUrl("login_qrcode", filename)
+	comm.ResSuccess(w, comm.D{
+		"qrcode_url": qrcodeUrl,
+	})
 }
 
 func LoginQRCodeScan(w http.ResponseWriter, r *http.Request) {

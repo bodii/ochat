@@ -166,17 +166,17 @@ func (s *UserService) CheckUserRequestLegal(r *http.Request) (userInfo models.Us
 func (s *UserService) CreateQrCode(user models.User) (filename string, err error) {
 	// 生成二维码
 	qrCodeUrl := fmt.Sprintf("%s/user?user_id=%d", bootstrap.HTTP_HOST, user.Id)
-	qrCodeFile, err := funcs.QrCode(qrCodeUrl)
+	filename, err = funcs.QrCode(qrCodeUrl, "user_qrcode")
 	if err != nil {
 		return "", err
 	}
 
-	user.QrCode = funcs.GetImgUrl("user_qrcode", qrCodeFile.Name())
+	user.QrCode = funcs.GetImgUrl("user_qrcode", filename)
 
 	num, err := s.DB.ID(user.Id).Cols("qr_code").Update(&user)
 	if err != nil || num < 1 {
 		return "", errors.New("update failure")
 	}
 
-	return user.QrCode, nil
+	return
 }
