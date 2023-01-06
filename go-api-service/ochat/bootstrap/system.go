@@ -48,7 +48,6 @@ type servConfT struct {
 // system->avatar config struct type
 type avatarConfT struct {
 	FileDir       string `yaml:"file_dir"`
-	Uri           string `yaml:"uri"`
 	SuffixName    string `yaml:"suffix_name"`
 	DefaultAvatar string `yaml:"default_avatar"`
 	UploadDir     string `yaml:"upload_dir"`
@@ -57,14 +56,12 @@ type avatarConfT struct {
 // system->login_qrcode config struct type
 type loginQRCodeT struct {
 	FileDir    string `yaml:"file_dir"`
-	Uri        string `yaml:"uri"`
 	SuffixName string `yaml:"suffix_name"`
 }
 
 // system->user_qrcode config struct type
 type UserQRCodeT struct {
 	FileDir    string `yaml:"file_dir"`
-	Uri        string `yaml:"uri"`
 	SuffixName string `yaml:"suffix_name"`
 }
 
