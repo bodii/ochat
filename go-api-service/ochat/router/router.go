@@ -22,8 +22,8 @@ func Init() {
 	// 扫描登录二维码(其它设备)
 	http.HandleFunc("/user/login/scan_qrcode", controllers.LoginQRCodeScan)
 
-	// 头像 - 显示
-	http.HandleFunc("/avatar/show", controllers.AvatarShow)
+	// 图片文件 - 显示
+	http.HandleFunc("/files/image", controllers.ImageShow)
 	// 头像 - 上传
 	http.HandleFunc("/avatar/upload", controllers.AvatarUpload)
 

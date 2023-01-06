@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"ochat/bootstrap"
 	"ochat/comm"
 	"ochat/comm/funcs"
 	"ochat/service"
@@ -61,23 +60,8 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if avatar == "" {
-		avatarConf := bootstrap.SystemConf.Avatar
-		staticAvatarPath := funcs.GetProjectDIR() + avatarConf.FileDir
-		switch sex {
-		case 1:
-			staticAvatarPath += "avatar_boy_kid_person_icon.png"
-		case 2:
-			staticAvatarPath += "child_girl_kid_person_icon.png"
-		default:
-			staticAvatarPath += "avatar_boy_male_user_young_icon.png"
-		}
-
-		avatarFilename := funcs.RandFileName(".png")
-		newAvatarPath := funcs.GetProjectDIR() + avatarConf.UploadDir + avatarFilename
-		// copy file
-		funcs.CopyFile(newAvatarPath, staticAvatarPath)
-
-		avatar = service.AvatarImgUrl(avatarFilename)
+		avatarFilename := funcs.DefaultAvatar(sex)
+		avatar = funcs.GetImgUrl("avatar", avatarFilename)
 	}
 
 	if nickname == "" {

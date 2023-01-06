@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"ochat/bootstrap"
 	"ochat/comm/funcs"
 	"ochat/models"
@@ -166,13 +165,13 @@ func (s *UserService) CheckUserRequestLegal(r *http.Request) (userInfo models.Us
 
 func (s *UserService) CreateQrCode(user models.User) (filename string, err error) {
 	// 生成二维码
-	qrCodeUrl := QrCodeOutUrl(user.Id)
+	qrCodeUrl := fmt.Sprintf("%s/user?user_id=%d", bootstrap.HTTP_HOST, user.Id)
 	qrCodeFile, err := funcs.QrCode(qrCodeUrl)
 	if err != nil {
 		return "", err
 	}
 
-	user.QrCode = QrCodeImgUrl(qrCodeFile.Name())
+	user.QrCode = funcs.GetImgUrl("user_qrcode", qrCodeFile.Name())
 
 	num, err := s.DB.ID(user.Id).Cols("qr_code").Update(&user)
 	if err != nil || num < 1 {
@@ -180,26 +179,4 @@ func (s *UserService) CreateQrCode(user models.User) (filename string, err error
 	}
 
 	return user.QrCode, nil
-}
-
-func QrCodeOutUrl(userId int64) string {
-	return fmt.Sprintf("%s/user?user_id=%d", bootstrap.HTTP_HOST, userId)
-}
-
-func QrCodeImgUrl(filename string) string {
-	imgUrl, err := url.JoinPath(bootstrap.HTTP_HOST, bootstrap.SystemConf.UserQRCode.Uri, filename)
-	if err != nil {
-		return ""
-	}
-
-	return imgUrl
-}
-
-func AvatarImgUrl(filename string) string {
-	imgUrl, err := url.JoinPath(bootstrap.HTTP_HOST, bootstrap.SystemConf.Avatar.Uri, filename)
-	if err != nil {
-		return ""
-	}
-
-	return imgUrl
 }
