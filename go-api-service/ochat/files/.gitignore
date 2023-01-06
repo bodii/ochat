@@ -1,5 +1,6 @@
-upload/avatars/*
-upload/images/*
+upload/avatar/*
+upload/image/*
+upload/video/*
+upload/voice/*
 upload/login_qrcode/*
-upload/videos/*
-upload/voices/*
+upload/user_qrcode/*
