@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"ochat/bootstrap"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/skip2/go-qrcode"
@@ -70,4 +72,61 @@ func CopyFile(dst string, src string) error {
 
 	// return
 	return err
+}
+
+func GetImgUrl(path, filename string) (url string) {
+	if path == "" || filename == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("%s/%s?path=%s&filename=%s",
+		bootstrap.HTTP_HOST, "files/image", path, filename)
+}
+
+func DefaultAvatar(sex int) (filename string) {
+	staticAvatarPath := GetProjectDIR() + "/files/static/avatar/default/"
+	switch sex {
+	case 1:
+		staticAvatarPath += "avatar_boy_kid_person_icon.png"
+	case 2:
+		staticAvatarPath += "child_girl_kid_person_icon.png"
+	default:
+		staticAvatarPath += "avatar_boy_male_user_young_icon.png"
+	}
+
+	newFilename := RandFileName(".png")
+	newAvatarPath := GetUploadFilePath("avatar", newFilename)
+	// copy file
+	err := CopyFile(newAvatarPath, staticAvatarPath)
+	if err != nil {
+		return ""
+	}
+
+	return newFilename
+}
+
+func GetUploadFilePath(path, fielname string) string {
+	return fmt.Sprintf("%s/files/upload/%s/%s", GetProjectDIR(), path, fielname)
+}
+
+func UploadFile(r *http.Request, upName, path string) (filename, oldFilename string, err error) {
+	file, fileHeader, err := r.FormFile(upName)
+	if err != nil {
+		return "", "", err
+	}
+	defer file.Close()
+
+	oldFilename = fileHeader.Filename
+	filename = RandFileName(filepath.Ext(oldFilename))
+	filepath := GetUploadFilePath(path, filename)
+
+	savePath, err := os.Create(filepath)
+	if err != nil {
+		return filename, oldFilename, err
+	}
+	defer savePath.Close()
+
+	io.Copy(savePath, file)
+
+	return
 }
