@@ -104,3 +104,45 @@ func UserQrCode(w http.ResponseWriter, r *http.Request) {
 		"user_info": userInfo,
 	})
 }
+
+func UserUpField(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
+	r.ParseForm()
+	canUpFailds := []string{
+		"mobile",   // 手机号
+		"nickname", // 用户昵称
+		"password", // 密码
+		"about",    // 简单描述
+		"avatar",   // 头像
+		"sex",      // 性别,0:无;1:男;2:女;
+		"birthday", // 生日
+	}
+
+	upFields := map[string]string{}
+	for _, field := range canUpFailds {
+		fieldVal := r.PostForm.Get(field)
+		if fieldVal != " " {
+			upFields[field] = fieldVal
+		}
+	}
+
+	_, err := service.NewUserServ().DB.Table("user").ID(userInfo.Id).Update(upFields)
+	if err != nil {
+		comm.ResFailure(w, 1201, "update failure")
+		return
+	}
+
+	userInfo, err = service.NewUserServ().UserIdToUserInfo(userInfo.Id)
+	if err != nil {
+		comm.ResFailure(w, 1202, "get user info failure")
+		return
+	}
+
+	comm.ResSuccess(w, userInfo)
+}
