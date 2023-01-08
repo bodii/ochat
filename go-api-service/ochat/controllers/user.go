@@ -126,9 +126,8 @@ func UserUpField(w http.ResponseWriter, r *http.Request) {
 
 	upFields := map[string]string{}
 	for _, field := range canUpFailds {
-		fieldVal := r.PostForm.Get(field)
-		if fieldVal != " " {
-			upFields[field] = fieldVal
+		if r.PostForm.Has(field) && r.PostForm.Get(field) != "" {
+			upFields[field] = r.PostForm.Get(field)
 		}
 	}
 
