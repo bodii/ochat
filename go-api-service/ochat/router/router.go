@@ -17,7 +17,7 @@ func Init() {
 	// 用户二维码页
 	http.HandleFunc("/user/qrcode", controllers.UserQrCode)
 	// 更新字段
-	http.HandleFunc("/user/upload", controllers.UserUpField)
+	http.HandleFunc("/user/update", controllers.UserUpField)
 
 	// 登录二维码(其它设备，生成)
 	http.HandleFunc("/user/login/qrcode", controllers.LoginQRCode)

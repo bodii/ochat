@@ -3,6 +3,7 @@ package funcs
 import (
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/mozillazg/go-pinyin"
 )
@@ -143,4 +144,17 @@ func RandStr(length int, level int) string {
 	}
 
 	return string(b)
+}
+
+// func UpdateTime
+//
+// see https://pkg.go.dev/time#pkg-constants
+//
+//	params:
+//
+// <= returns :
+//
+//	e.g. "2006-01-02T15:04:05.999999999Z07:00"
+func UpdateTime() string {
+	return time.Now().Local().Format(time.RFC3339Nano)
 }
