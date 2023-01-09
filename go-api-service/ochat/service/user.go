@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"ochat/bootstrap"
 	"ochat/comm/funcs"
 	"ochat/models"
@@ -75,25 +76,28 @@ func (s *UserService) Login(mobile, password string) (user models.User, err erro
 		return models.User{}, errors.New("password vaildate failute")
 	}
 
+	// 更新token
+	user, err = s.UpToken(user)
+	if err != nil {
+		return models.User{}, errors.New("failure: user data get failure")
+	}
+
 	return user, nil
 }
 
-func (s *UserService) UpToken(user_id int64) (user models.User, err error) {
-	user, err = s.UserIdToUserInfo(user_id)
-	if err != nil {
-		return user, err
-	}
-
-	if user.Id == 0 {
-		return models.User{}, err
+func (s *UserService) UpToken(user models.User) (models.User, error) {
+	if user.Id == 0 || user.Token == "" {
+		return models.User{}, errors.New("update failure")
 	}
 
 	token := funcs.GenerateToken(user.Password + user.Salt)
-
-	user.Token = token
-	num, err := s.DB.ID(user_id).Cols("token").Update(&user)
-	if err != nil || num < 1 {
-		return user, errors.New("update failure")
+	if token != user.Token {
+		user.Token = token
+		user.Updated_at = time.Now()
+		num, err := s.DB.ID(user.Id).Cols("token", "updated_at").Update(&user)
+		if err != nil || num < 1 {
+			return user, errors.New("update failure")
+		}
 	}
 
 	return user, nil
@@ -172,11 +176,54 @@ func (s *UserService) CreateQrCode(user models.User) (filename string, err error
 	}
 
 	user.QrCode = funcs.GetImgUrl("user_qrcode", filename)
+	user.Updated_at = time.Now()
 
-	num, err := s.DB.ID(user.Id).Cols("qr_code").Update(&user)
+	num, err := s.DB.ID(user.Id).Cols("qr_code", "updated_at").Update(&user)
 	if err != nil || num < 1 {
 		return "", errors.New("update failure")
 	}
 
 	return
+}
+
+func (s *UserService) UpdateFields(fileds url.Values, userId int64, resetData bool) (user models.User, err error) {
+	canUpFailds := []string{
+		"mobile",   // 手机号
+		"nickname", // 用户昵称
+		"password", // 密码
+		"about",    // 简单描述
+		"avatar",   // 头像
+		"sex",      // 性别,0:无;1:男;2:女;
+		"birthday", // 生日
+	}
+
+	upFields := map[string]string{}
+	for _, field := range canUpFailds {
+		if fileds.Has(field) && fileds.Get(field) != "" {
+			upFields[field] = fileds.Get(field)
+		}
+	}
+
+	if len(upFields) == 0 {
+		return models.User{}, errors.New("no update")
+
+	}
+
+	upFields["updated_at"] = funcs.UpdateTime()
+
+	_, err = s.DB.Table("user").Where("id = ?", userId).Update(upFields)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	if !resetData {
+		return models.User{}, nil
+	}
+
+	user, err = s.UserIdToUserInfo(userId)
+	if err != nil {
+		return user, errors.New("get user info failure")
+	}
+
+	return user, nil
 }

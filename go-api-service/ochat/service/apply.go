@@ -75,10 +75,21 @@ func (a *ApplyService) Set(id int64, status int) (bool, error) {
 		UpdatedAt: time.Now(),
 	}
 
-	_, err := a.DB.Where("id = ?", id).
+	apply := models.Apply{}
+	exists, err := a.DB.Where("id = ?", id).Get(&apply)
+	if err != nil || !exists {
+		return false, errors.New("get apply data failure")
+	}
+
+	_, err = a.DB.Where("id = ?", apply.Id).
 		Cols("status", "UpdatedAt").
 		Update(&updateData)
 	if err != nil {
+		return false, err
+	}
+
+	if status == 2 {
+		_, err = NewFriendServ().Add(apply.Responder, apply.Petitioner, "", "")
 		return false, err
 	}
 
