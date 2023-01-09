@@ -24,12 +24,6 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		comm.ResFailure(w, 1002, "failure: user data is empty")
 		return
 	}
-	// 更新token
-	userInfo, err = service.NewUserServ().UpToken(userInfo.Id)
-	if err != nil {
-		comm.ResFailure(w, 1003, "failure: user data get failure")
-		return
-	}
 
 	comm.ResSuccess(w, userInfo)
 }
@@ -114,33 +108,9 @@ func UserUpField(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.ParseForm()
-	canUpFailds := []string{
-		"mobile",   // 手机号
-		"nickname", // 用户昵称
-		"password", // 密码
-		"about",    // 简单描述
-		"avatar",   // 头像
-		"sex",      // 性别,0:无;1:男;2:女;
-		"birthday", // 生日
-	}
-
-	upFields := map[string]string{}
-	for _, field := range canUpFailds {
-		if r.PostForm.Has(field) && r.PostForm.Get(field) != "" {
-			upFields[field] = r.PostForm.Get(field)
-		}
-	}
-
-	_, err := service.NewUserServ().DB.Table("user").ID(userInfo.Id).Update(upFields)
+	userInfo, err := service.NewUserServ().UpdateFields(r.PostForm, userInfo.Id, true)
 	if err != nil {
-		comm.ResFailure(w, 1201, "update failure")
-		return
-	}
-
-	userInfo, err = service.NewUserServ().UserIdToUserInfo(userInfo.Id)
-	if err != nil {
-		comm.ResFailure(w, 1202, "get user info failure")
-		return
+		comm.ResFailure(w, 1001, err.Error())
 	}
 
 	comm.ResSuccess(w, userInfo)

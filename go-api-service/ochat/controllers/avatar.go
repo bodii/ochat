@@ -10,7 +10,7 @@ import (
 // 上传头像图片
 func AvatarUpload(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
@@ -22,6 +22,15 @@ func AvatarUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url := funcs.GetImgUrl("avatar", filename)
+
+	r.PostForm.Add("avatar", url)
+	user.Avatar = url
+	_, err = service.NewUserServ().UpdateFields(r.PostForm, user.Id, false)
+	if err != nil {
+		comm.ResFailure(w, 1201, err.Error())
+		return
+	}
+
 	comm.ResSuccess(w, comm.D{
 		"avatar_url": url,
 	})
