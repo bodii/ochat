@@ -38,10 +38,14 @@ func Init() {
 	// 申请好友 - 操作
 	http.HandleFunc("/apply/dispose", controllers.ApplyDispose)
 
-	// 好友 - 设置黑名单
-	http.HandleFunc("/friend/blacklist", controllers.FriendToBlacklist)
 	// 好友 - 列表
 	http.HandleFunc("/friend/list", controllers.FriendList)
-	// 好友 - 添加
-	http.HandleFunc("/friend/add", controllers.FriendAdd)
+	// 好友 - 更新信息
+	http.HandleFunc("/friend/update", controllers.FriendUpdate)
+	// 好友 - 设置黑名单
+	http.HandleFunc("/friend/blacklist", controllers.FriendToBlacklist)
+	// 好友 - 设置屏蔽
+	http.HandleFunc("/friend/hide", controllers.FriendToHide)
+	// 好友 - 设置置顶
+	http.HandleFunc("/friend/top", controllers.FriendToTop)
 }

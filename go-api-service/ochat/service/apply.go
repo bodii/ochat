@@ -20,7 +20,17 @@ func NewApplyServ() *ApplyService {
 }
 
 // 添加好友/群申请
+//
+// params:
+//   - userId: current user id
+//   - addUserId: add the user id
+//   - comment:
+//   - applyType: 申请类型,1:好友;2:群
+//
+// return: user list or error
 func (a *ApplyService) Add(userId, addUserId int64, comment string, addType int) (models.Apply, error) {
+	// TODO: 添加时，查看被添加者是否需要验证 user.friend_verify
+
 	addData := models.Apply{
 		Petitioner: userId,
 		Responder:  addUserId,
@@ -41,13 +51,12 @@ func (a *ApplyService) Add(userId, addUserId int64, comment string, addType int)
 
 // 查看向当前用户发起申请的状态的好友列表
 //
-// [param]
+// params:
+//   - userId: current user id
+//   - status: 应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
+//   - applyType: 申请类型,1:好友;2:群
 //
-//	userId: current user id
-//	status: 应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
-//	applyType: 申请类型,1:好友;2:群
-//
-// [return] user list or error
+// return: user list or error
 func (a *ApplyService) List(userId int64, status, applyType int) ([]models.User, error) {
 	userInfos := make([]models.User, 0)
 
@@ -63,13 +72,13 @@ func (a *ApplyService) List(userId int64, status, applyType int) ([]models.User,
 
 // 设置/更新申请状态
 //
-// [param]
+// params:
+//   - id: apply id
+//   - status: 应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
+//   - user: 处理设置的用户
 //
-//	id: apply id
-//	status: 应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
-//
-// [return] whether to set up successfully
-func (a *ApplyService) Set(id int64, status int) (bool, error) {
+// return: whether to set up successfully
+func (a *ApplyService) Set(id int64, status int, user models.User) (bool, error) {
 	updateData := models.Apply{
 		Status:    status,
 		UpdatedAt: time.Now(),
@@ -88,9 +97,18 @@ func (a *ApplyService) Set(id int64, status int) (bool, error) {
 		return false, err
 	}
 
+	// 添加好友信息
 	if status == 2 {
-		_, err = NewFriendServ().Add(apply.Responder, apply.Petitioner, "", "")
-		return false, err
+		friend, err := NewUserServ().UserIdToUserInfo(apply.Petitioner)
+		if err != nil {
+			return false, err
+		}
+
+		// 添加好友类型
+		if apply.Type == 1 {
+			_, err = NewFriendServ().Adds(user, friend)
+			return false, err
+		} // TODO apply.Type == 2 : 添加群
 	}
 
 	return true, nil

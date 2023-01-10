@@ -1,9 +1,11 @@
 package service
 
 import (
+	"net/http"
 	"ochat/bootstrap"
 	"ochat/comm/funcs"
 	"ochat/models"
+	"strconv"
 	"time"
 
 	"xorm.io/xorm"
@@ -31,23 +33,86 @@ func (f *FriendService) List(userId int64, status int) (users []models.User, err
 	return users, err
 }
 
-func (f *FriendService) Add(userId, friendId int64, friendAlias, about string) (friendInfo models.Friend, err error) {
-	// 获取昵称前缀
-	aliasPrefix := funcs.StrPrefix(friendAlias, 1, 2)
-	// 如果前缀首个字符不是英文或中文，则返回＃
-	if !funcs.IsEnglish(aliasPrefix) {
-		aliasPrefix = "#"
+// adds func: petitioner and responder both parties as friends
+//
+//	params:
+//	 - pet: petitioner user info
+//	 - res: responder user info
+//	return:
+//	 - ok: whether to add successfully
+//	 - err: error message
+func (f *FriendService) Adds(pet models.User, res models.User) (ok bool, err error) {
+	friends := make([]*models.Friend, 2)
+	friends[0] = &models.Friend{
+		UserId:      res.Id,
+		FriendId:    pet.Id,
+		FriendAlias: pet.Nickname,
+		AliasPrefix: funcs.StrPrefix(pet.Nickname, 1, 2),
+		Status:      1,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
-	friendInfo = models.Friend{
-		UserId:      userId,
-		FriendId:    friendId,
-		FriendAlias: friendAlias,
-		AliasPrefix: aliasPrefix,
-		About:       about,
+	friends[1] = &models.Friend{
+		UserId:      pet.Id,
+		FriendId:    res.Id,
+		FriendAlias: res.Nickname,
+		AliasPrefix: funcs.StrPrefix(res.Nickname, 1, 2),
 		Status:      1,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
 
-	return friendInfo, nil
+	num, err := f.DB.Insert(friends)
+	if err != nil || num <= 0 {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (f *FriendService) Update(friend models.Friend, cols []string) (ok bool, err error) {
+	canUpdateFields := map[string]bool{
+		"friend_alias": true,
+		"alias_prefix": true,
+		"about":        true,
+	}
+
+	updateFields := make([]string, 0)
+	for _, f := range cols {
+		if canUpdateFields[f] {
+			updateFields = append(updateFields, f)
+		}
+	}
+
+	num, err := f.DB.Where("id = ?", friend.Id).Cols(updateFields...).Update(friend)
+	if err != nil || num <= 0 {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (f *FriendService) UpdateStatus(r *http.Request, userId int64, status int) (ok bool, err error) {
+	r.ParseForm()
+	friendIdStr := r.PostFormValue("friend_id")
+	friendId, err := strconv.Atoi(friendIdStr)
+	if err != nil {
+		return false, err
+	}
+
+	friend := models.Friend{}
+	exitis, err := f.DB.Where(
+		"user_id = ? and friend_id = ?", userId, friendId).Get(&friend)
+	if err != nil || !exitis {
+		return false, err
+	}
+
+	friend.Status = status
+	friend.UpdatedAt = time.Now()
+	num, err := f.DB.Where("id = ?", friend.Id).Cols("status", "updated_at").Update(friend)
+	if err != nil || num <= 0 {
+		return false, err
+	}
+
+	return true, nil
 }

@@ -110,7 +110,7 @@ func ApplyList(w http.ResponseWriter, r *http.Request) {
 // 处理向我申请好友
 func ApplyDispose(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
@@ -137,8 +137,8 @@ func ApplyDispose(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// status应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
-	ok, err := service.NewApplyServ().Set(applyId, disposeId)
-	if !ok || err != nil {
+	ok, err := service.NewApplyServ().Set(applyId, disposeId, user)
+	if err != nil || !ok {
 		comm.ResFailure(w, 1004, "dispose are incorrect")
 		return
 	}
