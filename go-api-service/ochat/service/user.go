@@ -40,17 +40,17 @@ func (s *UserService) Register(
 
 	// 构建用户数据
 	userInfo = models.User{
-		Mobile:     mobile,
-		Username:   username,
-		Avatar:     avatar,
-		Nickname:   nickname,
-		Sex:        sex,
-		Password:   funcs.GeneratePasswd(password, salt),
-		Salt:       salt,
-		Token:      token,
-		Status:     1,
-		Created_at: time.Now(),
-		Updated_at: time.Now(),
+		Mobile:    mobile,
+		Username:  username,
+		Avatar:    avatar,
+		Nickname:  nickname,
+		Sex:       sex,
+		Password:  funcs.GeneratePasswd(password, salt),
+		Salt:      salt,
+		Token:     token,
+		Status:    1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	// 保存数据
@@ -93,7 +93,7 @@ func (s *UserService) UpToken(user models.User) (models.User, error) {
 	token := funcs.GenerateToken(user.Password + user.Salt)
 	if token != user.Token {
 		user.Token = token
-		user.Updated_at = time.Now()
+		user.UpdatedAt = time.Now()
 		num, err := s.DB.ID(user.Id).Cols("token", "updated_at").Update(&user)
 		if err != nil || num < 1 {
 			return user, errors.New("update failure")
@@ -176,7 +176,7 @@ func (s *UserService) CreateQrCode(user models.User) (filename string, err error
 	}
 
 	user.QrCode = funcs.GetImgUrl("user_qrcode", filename)
-	user.Updated_at = time.Now()
+	user.UpdatedAt = time.Now()
 
 	num, err := s.DB.ID(user.Id).Cols("qr_code", "updated_at").Update(&user)
 	if err != nil || num < 1 {
