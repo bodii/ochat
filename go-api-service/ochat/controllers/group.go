@@ -6,32 +6,31 @@ import (
 	"ochat/service"
 )
 
-// TODO：发起申请添加群成员
-func GroupAddApply(w http.ResponseWriter, r *http.Request) {
+// 群 - 查看群信息
+func Group(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
 	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
 	}
+
 }
 
-// TODO：群主处理申请添加群成员的请求处理
-func GroupApplyDispose(w http.ResponseWriter, r *http.Request) {
+// 群 - 查看用户的所有群信息
+func GroupList(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
 	}
-}
 
-// TODO：群主踢人
-func GroupKickOutMumber(w http.ResponseWriter, r *http.Request) {
-	// verify user legal
-	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
-	if errStr != "" {
-		comm.ResFailure(w, code, errStr)
+	groups, err := service.NewGroupServ().UserList(user.Id)
+	if err != nil {
+		comm.ResFailure(w, 2101, err.Error())
 		return
 	}
+
+	comm.ResSuccess(w, groups)
 }

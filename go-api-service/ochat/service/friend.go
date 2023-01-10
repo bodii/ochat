@@ -48,7 +48,7 @@ func (f *FriendService) Adds(pet models.User, res models.User) (ok bool, err err
 		FriendId:    pet.Id,
 		FriendAlias: pet.Nickname,
 		AliasPrefix: funcs.StrPrefix(pet.Nickname, 1, 2),
-		Status:      1,
+		Status:      models.FRIEND_STATUS_FRIENDED,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
@@ -57,13 +57,13 @@ func (f *FriendService) Adds(pet models.User, res models.User) (ok bool, err err
 		FriendId:    res.Id,
 		FriendAlias: res.Nickname,
 		AliasPrefix: funcs.StrPrefix(res.Nickname, 1, 2),
-		Status:      1,
+		Status:      models.FRIEND_STATUS_FRIENDED,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
 
 	num, err := f.DB.Insert(friends)
-	if err != nil || num <= 0 {
+	if err != nil || num == 0 {
 		return false, err
 	}
 
@@ -85,7 +85,7 @@ func (f *FriendService) Update(friend models.Friend, cols []string) (ok bool, er
 	}
 
 	num, err := f.DB.Where("id = ?", friend.Id).Cols(updateFields...).Update(friend)
-	if err != nil || num <= 0 {
+	if err != nil || num == 0 {
 		return false, err
 	}
 
@@ -110,7 +110,7 @@ func (f *FriendService) UpdateStatus(r *http.Request, userId int64, status int) 
 	friend.Status = status
 	friend.UpdatedAt = time.Now()
 	num, err := f.DB.Where("id = ?", friend.Id).Cols("status", "updated_at").Update(friend)
-	if err != nil || num <= 0 {
+	if err != nil || num == 0 {
 		return false, err
 	}
 

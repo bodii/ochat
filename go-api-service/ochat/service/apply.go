@@ -34,14 +34,14 @@ func (a *ApplyService) Add(userId, addUserId int64, comment string, addType int)
 	addData := models.Apply{
 		Petitioner: userId,
 		Responder:  addUserId,
-		Status:     0,
-		Type:       1,
+		Status:     models.APPLY_STATUS_UNREAD,
+		Type:       models.APPLY_TYPE_USER,
 		FriendId:   addUserId,
 		Comment:    comment,
 		CreatedAt:  time.Now(),
 	}
 
-	if num, err := a.DB.InsertOne(&addData); err != nil || num <= 0 {
+	if num, err := a.DB.InsertOne(&addData); err != nil || num == 0 {
 		errStr := "apply info insert database failure"
 		return addData, errors.New(errStr)
 	}

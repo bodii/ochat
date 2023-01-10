@@ -48,13 +48,13 @@ func (s *UserService) Register(
 		Password:  funcs.GeneratePasswd(password, salt),
 		Salt:      salt,
 		Token:     token,
-		Status:    1,
+		Status:    models.USER_STATUS_VALID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
 
 	// 保存数据
-	if num, err := s.DB.InsertOne(&userInfo); err != nil || num <= 0 {
+	if num, err := s.DB.InsertOne(&userInfo); err != nil || num == 0 {
 		errStr := "user data insert database failure"
 		return userInfo, errors.New(errStr)
 	}

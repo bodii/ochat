@@ -98,7 +98,8 @@ func ApplyList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// status应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
-	users, err := service.NewApplyServ().List(userInfo.Id, 0, 1)
+	users, err := service.NewApplyServ().List(userInfo.Id,
+		models.APPLY_STATUS_UNREAD, models.APPLY_TYPE_USER)
 	if err != nil || len(users) == 0 {
 		comm.ResFailure(w, 1002, "the query is incorrect or does not exist")
 		return
@@ -131,7 +132,9 @@ func ApplyDispose(w http.ResponseWriter, r *http.Request) {
 
 	applyId, _ := strconv.ParseInt(applyIdStr, 10, 64)
 	disposeId, err := strconv.Atoi(disposeIdStr)
-	if err != nil || disposeId < -1 || disposeId > 2 {
+	if err != nil || disposeId < models.APPLY_STATUS_REFUSE ||
+		disposeId > models.APPLY_STATUS_AGREE {
+
 		comm.ResFailure(w, 1003, "the dispose parameters are incorrect")
 		return
 	}

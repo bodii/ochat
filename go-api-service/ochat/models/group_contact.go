@@ -39,6 +39,6 @@ type GroupContact struct {
 	Nickname     string    `xorm:"varchar(30) not null default '' comment('联系人在群里的昵称')" form:"nickname" json:"nickname"`
 	NoticeStatus int       `xorm:"tinyint not null default 1 comment('通知状态,0:免打扰;1:正常;')" form:"notice_status" json:"notice_status"`
 	Status       int       `xorm:"tinyint index('group_contact_status') not null default 1 comment('状态,-1:被踢出;0:退出;1:正常;2:群置顶')" form:"status" json:"status"`
-	CreatedAt    time.Time `xorm:"datetime not null comment('创建时间')" form:"created_at" json:"created_at"`
-	UpdatedAt    time.Time `xorm:"datetime not null comment('更新时间')" form:"updated_at" json:"updated_at"`
+	CreatedAt    time.Time `xorm:"datetime(6) not null comment('创建时间')" form:"created_at" json:"created_at"`
+	UpdatedAt    time.Time `xorm:"datetime(6) not null comment('更新时间')" form:"updated_at" json:"updated_at"`
 }

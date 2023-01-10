@@ -23,6 +23,6 @@ type Group struct {
 	Abstract  string    `xorm:"varchar(120) not null default 0 comment('简介')" form:"abstract" json:"abstract"`
 	Type      int       `xorm:"tinyint not null default 0 comment('类型')" form:"type" json:"type"`
 	Status    int       `xorm:"tinyint index('group_status') not null default 1 comment('是否有效,1:有效;0:无效')" form:"status" json:"status"`
-	CreatedAt time.Time `xorm:"datetime not null comment('创建时间')" form:"created_at" json:"created_at"`
-	UpdatedAt time.Time `xorm:"datetime not null comment('更新时间')" form:"updated_at" json:"updated_at"`
+	CreatedAt time.Time `xorm:"datetime(6) not null comment('创建时间')" form:"created_at" json:"created_at"`
+	UpdatedAt time.Time `xorm:"datetime(6) not null comment('更新时间')" form:"updated_at" json:"updated_at"`
 }

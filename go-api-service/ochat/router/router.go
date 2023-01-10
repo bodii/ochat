@@ -29,13 +29,13 @@ func Init() {
 	// 头像 - 上传
 	http.HandleFunc("/avatar/upload", controllers.AvatarUpload)
 
-	// 申请好友 - 查找
+	// 申请好友/群 - 查找
 	http.HandleFunc("/apply/find", controllers.ApplyFind)
-	// 申请好友 - 添加
+	// 申请好友/群 - 添加
 	http.HandleFunc("/apply/add", controllers.ApplyAdd)
-	// 申请好友 - 查看
+	// 申请好友/群 - 查看
 	http.HandleFunc("/apply/list", controllers.ApplyList)
-	// 申请好友 - 操作
+	// 申请好友/群 - 操作
 	http.HandleFunc("/apply/dispose", controllers.ApplyDispose)
 
 	// 好友 - 列表
@@ -48,4 +48,22 @@ func Init() {
 	http.HandleFunc("/friend/hide", controllers.FriendToHide)
 	// 好友 - 设置置顶
 	http.HandleFunc("/friend/top", controllers.FriendToTop)
+
+	// 群 - 查看群信息
+	http.HandleFunc("/group", controllers.Group)
+	// 群 - 查看用户的所有群信息
+	http.HandleFunc("/group/list", controllers.GroupList)
+	// 群 - 修改群信息
+	http.HandleFunc("/group/status", controllers.Group)
+
+	// 群联系人 - 查看群成员
+	http.HandleFunc("/group/contact", controllers.GroupContact)
+	// 群联系人 - 群联系人列表
+	http.HandleFunc("/group/contact/list", controllers.GroupContactList)
+	// 群联系人 - 群主/管理员踢人
+	http.HandleFunc("/group/contact/kick_out", controllers.GroupContactKickOut)
+	// 群联系人 - 退出
+	http.HandleFunc("/group/contact/exit", controllers.GroupContactExit)
+	// 群联系人 - 置顶群
+	http.HandleFunc("/group/contact/top", controllers.GroupContactTop)
 }
