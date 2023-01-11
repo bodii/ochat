@@ -54,10 +54,14 @@ func Init() {
 	// 群 - 查看用户的所有群信息
 	http.HandleFunc("/group/list", controllers.GroupList)
 	// 群 - 修改群信息
-	http.HandleFunc("/group/status", controllers.Group)
+	http.HandleFunc("/group/update", controllers.GroupUpFiled)
+	// 群 - 二维码
+	http.HandleFunc("/group/qr_code", controllers.GroupQrCode)
 
 	// 群联系人 - 查看群成员
 	http.HandleFunc("/group/contact", controllers.GroupContact)
+	// 群联系人 - 设置管理员
+	http.HandleFunc("/group/contact/manager", controllers.GroupContactManager)
 	// 群联系人 - 群联系人列表
 	http.HandleFunc("/group/contact/list", controllers.GroupContactList)
 	// 群联系人 - 群主/管理员踢人
@@ -66,4 +70,6 @@ func Init() {
 	http.HandleFunc("/group/contact/exit", controllers.GroupContactExit)
 	// 群联系人 - 置顶群
 	http.HandleFunc("/group/contact/top", controllers.GroupContactTop)
+	// 群联系人 - 更新信息
+	http.HandleFunc("/group/contact/update", controllers.GroupContactUpField)
 }

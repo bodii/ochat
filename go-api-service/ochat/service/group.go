@@ -2,7 +2,10 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"net/url"
 	"ochat/bootstrap"
+	"ochat/comm/funcs"
 	"ochat/models"
 	"time"
 
@@ -87,4 +90,68 @@ func (g *GroupService) Add(master models.User, members ...models.User) (
 	}
 
 	return true, group, groupContacts, nil
+}
+
+func (g *GroupService) Info(groupId int64) (group models.Group, err error) {
+	ok, err := g.DB.Where("id = ?", groupId).
+		And("status = ?", models.GROUP_STATUS_OPEN).
+		Get(&group)
+	if err != nil || !ok {
+		return group, errors.New("select failure")
+	}
+
+	return
+}
+
+func (g *GroupService) CreateQrCode(group *models.Group) (filename string, err error) {
+	// 生成二维码
+	qrCodeUrl := fmt.Sprintf("%s/group?group_id=%d", bootstrap.HTTP_HOST, group.Id)
+	filename, err = funcs.QrCode(qrCodeUrl, "group_qrcode")
+	if err != nil {
+		return "", err
+	}
+
+	group.QrCode = funcs.GetImgUrl("group_qrcode", filename)
+	group.UpdatedAt = time.Now()
+
+	num, err := g.DB.Where("id =?", group.Id).Cols("qr_code", "updated_at").Update(group)
+	if err != nil || num < 1 {
+		return "", errors.New("update failure")
+	}
+
+	return
+}
+
+func (g *GroupService) UpdateFields(fields url.Values, userId, groupId int64) (group models.Group, err error) {
+	group, err = NewGroupServ().Info(groupId)
+	if err != nil {
+		return group, err
+	}
+
+	groupContact, err := NewGroupContactServ().Info(userId, group.Id)
+	if err != nil {
+		return group, err
+	}
+
+	if groupContact.Type < models.GROUP_CONTACT_TYPE_MANAGER {
+		return group, errors.New("current user is group member, Unable to set")
+	}
+
+	canUpdateFields := []string{
+		"name", "announcement", "about",
+	}
+	upFields := map[string]any{}
+	for _, field := range canUpdateFields {
+		if fields.Has(field) && fields.Get(field) != "" {
+			upFields[field] = fields.Get(field)
+		}
+	}
+
+	if len(upFields) == 0 {
+		return group, errors.New("no update")
+	}
+
+	_, err = g.DB.Table("group").Where("id = ?", group.Id).Update(upFields)
+
+	return
 }

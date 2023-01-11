@@ -4,3 +4,5 @@ upload/video/*
 upload/voice/*
 upload/login_qrcode/*
 upload/user_qrcode/*
+upload/group_qrcode/*
+upload/group_avatar/*

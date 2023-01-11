@@ -84,8 +84,8 @@ func GroupContactKickOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	kickGroupContact, err = service.NewGroupContactServ().ChangeStatus(
-		kickGroupContact.Id, models.GROUP_CONTACT_STATUS_KICK_OUT)
+	err = service.NewGroupContactServ().ChangeStatus(
+		&kickGroupContact, models.GROUP_CONTACT_STATUS_KICK_OUT)
 	if err != nil {
 		comm.ResFailure(w, 2103, "change failure")
 		return
@@ -138,8 +138,8 @@ func GroupContactExit(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO：如果当前群联系人只剩一个人时，退出后，群解散
 
-	groupContact, err = service.NewGroupContactServ().ChangeStatus(
-		groupContact.Id, models.GROUP_CONTACT_STATUS_EXIT)
+	err = service.NewGroupContactServ().ChangeStatus(
+		&groupContact, models.GROUP_CONTACT_STATUS_EXIT)
 	if err != nil {
 		comm.ResFailure(w, 2103, "change failure")
 		return
@@ -171,12 +171,114 @@ func GroupContactTop(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groupContact, err = service.NewGroupContactServ().ChangeStatus(
-		groupContact.Id, models.GROUP_CONTACT_STATUS_GROUP_TOP)
+	err = service.NewGroupContactServ().ChangeStatus(
+		&groupContact, models.GROUP_CONTACT_STATUS_GROUP_TOP)
 	if err != nil {
 		comm.ResFailure(w, 2103, "change failure")
 		return
 	}
 
 	comm.ResSuccess(w, groupContact)
+}
+
+// 群联系人 - 设置管理员
+func GroupContactManager(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
+	r.ParseForm()
+
+	groupIdStr := r.PostFormValue("group_id")
+	memberIdStr := r.PostFormValue("member_id")
+	setType := r.PostFormValue("type") // cancel、upgrade
+	if groupIdStr == "" || !funcs.IsNumber(groupIdStr) {
+		comm.ResFailure(w, 1101, "group_id param failure")
+		return
+	}
+
+	if memberIdStr == "" || !funcs.IsNumber(memberIdStr) {
+		comm.ResFailure(w, 1102, "manager_id param failure")
+		return
+	}
+
+	if setType == "" || (setType != "cancel" && setType != "upgrade") {
+		comm.ResFailure(w, 1103, "type param failure")
+		return
+	}
+
+	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
+	memberId, _ := strconv.ParseInt(memberIdStr, 10, 64)
+	if user.Id == memberId {
+		comm.ResFailure(w, 2101, "current user and input member is the same person")
+		return
+	}
+
+	userGroupContact, err := service.NewGroupContactServ().Info(user.Id, groupId)
+	if err != nil {
+		comm.ResFailure(w, 2101, "current user the group contact info is exists")
+		return
+	}
+	if userGroupContact.Type < models.GROUP_CONTACT_TYPE_MANAGER {
+		comm.ResFailure(w, 2102, "current user is not group master or manager")
+		return
+	}
+
+	memberGroupContact, err := service.NewGroupContactServ().Info(memberId, groupId)
+	if err != nil {
+		comm.ResFailure(w, 2103, "current member the group contact info is exists")
+		return
+	}
+
+	if setType == "upgrade" {
+		if memberGroupContact.Type > models.GROUP_CONTACT_TYPE_MEMBER {
+			comm.ResFailure(w, 2104, "current member is not ordinary member")
+			return
+		}
+
+		service.NewGroupContactServ().ChangeType(&memberGroupContact,
+			models.GROUP_CONTACT_TYPE_MANAGER)
+	}
+
+	if setType == "cancel" {
+		if memberGroupContact.Type < models.GROUP_CONTACT_TYPE_MANAGER {
+			comm.ResFailure(w, 2105, "current member is not ordinary member")
+			return
+		}
+
+		service.NewGroupContactServ().ChangeType(&memberGroupContact,
+			models.GROUP_CONTACT_TYPE_MEMBER)
+	}
+
+	comm.ResSuccess(w, memberGroupContact)
+}
+
+// 群联系人 - 更新信息
+func GroupContactUpField(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
+	r.ParseForm()
+	groupIdstr := r.PostFormValue("group_id")
+	if groupIdstr == "" || !funcs.IsNumber(groupIdstr) {
+		comm.ResFailure(w, 1001, "group id param failure")
+		return
+	}
+
+	groupId, _ := strconv.ParseInt(groupIdstr, 10, 64)
+	err := service.NewGroupContactServ().UpdateFields(user.Id, groupId, r.PostForm)
+	if err != nil {
+		comm.ResFailure(w, 1001, err.Error())
+		return
+	}
+
+	comm.ResSuccess(w, nil)
+
 }

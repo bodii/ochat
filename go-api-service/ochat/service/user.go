@@ -167,7 +167,7 @@ func (s *UserService) CheckUserRequestLegal(r *http.Request) (userInfo models.Us
 	return
 }
 
-func (s *UserService) CreateQrCode(user models.User) (filename string, err error) {
+func (s *UserService) CreateQrCode(user *models.User) (filename string, err error) {
 	// 生成二维码
 	qrCodeUrl := fmt.Sprintf("%s/user?user_id=%d", bootstrap.HTTP_HOST, user.Id)
 	filename, err = funcs.QrCode(qrCodeUrl, "user_qrcode")
@@ -178,7 +178,7 @@ func (s *UserService) CreateQrCode(user models.User) (filename string, err error
 	user.QrCode = funcs.GetImgUrl("user_qrcode", filename)
 	user.UpdatedAt = time.Now()
 
-	num, err := s.DB.ID(user.Id).Cols("qr_code", "updated_at").Update(&user)
+	num, err := s.DB.Where("id =?", user.Id).Cols("qr_code", "updated_at").Update(&user)
 	if err != nil || num < 1 {
 		return "", errors.New("update failure")
 	}
@@ -187,7 +187,7 @@ func (s *UserService) CreateQrCode(user models.User) (filename string, err error
 }
 
 func (s *UserService) UpdateFields(fileds url.Values, userId int64, resetData bool) (user models.User, err error) {
-	canUpFailds := []string{
+	canUpFields := []string{
 		"mobile",   // 手机号
 		"nickname", // 用户昵称
 		"password", // 密码
@@ -198,7 +198,7 @@ func (s *UserService) UpdateFields(fileds url.Values, userId int64, resetData bo
 	}
 
 	upFields := map[string]string{}
-	for _, field := range canUpFailds {
+	for _, field := range canUpFields {
 		if fileds.Has(field) && fileds.Get(field) != "" {
 			upFields[field] = fileds.Get(field)
 		}

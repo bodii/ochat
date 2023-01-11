@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"net/url"
 	"ochat/bootstrap"
 	"ochat/models"
 	"time"
@@ -84,26 +85,73 @@ func (g *GroupContactService) TypeInfo(groupId int64, typeVal int) (gc models.Gr
 	return gc, err
 }
 
-func (g *GroupContactService) ChangeStatus(groupContactId int64, status int) (
-	gc models.GroupContact, err error) {
+func (g *GroupContactService) ChangeStatus(gc *models.GroupContact, status int) (
+	err error) {
 
-	gc = models.GroupContact{}
-	ok, err := g.DB.
-		Where("id = ?", groupContactId).
-		Get(&gc)
-	if err != nil || !ok {
-		return gc, err
-	}
-
-	num, err := g.DB.Where("id = ?", groupContactId).
+	num, err := g.DB.Where("id = ?", gc.Id).
 		Cols("status", "updated_at").
 		Update(map[string]any{
 			"status":     status,
 			"updated_at": time.Now(),
 		})
 	if err != nil || num == 0 {
-		return gc, err
+		return err
 	}
 
-	return gc, nil
+	gc.Status = status
+
+	return nil
+}
+
+func (g *GroupContactService) ChangeType(gc *models.GroupContact, typeVal int) (
+	err error) {
+
+	num, err := g.DB.Where("id = ?", gc.Id).
+		Cols("type", "updated_at").
+		Update(map[string]any{
+			"type":       typeVal,
+			"updated_at": time.Now(),
+		})
+	if err != nil || num == 0 {
+		return err
+	}
+
+	gc.Type = typeVal
+
+	return nil
+}
+
+func (g *GroupContactService) UpdateFields(
+	userId int64, groupId int64, fields url.Values) error {
+
+	groupContact, err := g.Info(userId, groupId)
+	if err != nil {
+		return err
+	}
+
+	canUpFields := []string{
+		"group_alias",
+		"nickname",
+		"notice_status",
+	}
+
+	// gcRef := reflect.ValueOf(groupContact)
+
+	upFields := map[string]string{}
+	for _, field := range canUpFields {
+		if fields.Has(field) && fields.Get(field) != "" {
+			upFields[field] = fields.Get(field)
+		}
+	}
+
+	if len(upFields) == 0 {
+		return errors.New("no update")
+	}
+
+	_, err = g.DB.Table("group_contact").Where("id = ?", groupContact.Id).Update(upFields)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
