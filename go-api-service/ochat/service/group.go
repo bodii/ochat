@@ -45,7 +45,6 @@ func (g *GroupService) Add(master models.User, members ...models.User) (
 
 	group := models.Group{
 		Name:      master.Nickname,
-		ManagerId: master.Id,
 		Icon:      master.Avatar,
 		Status:    models.GROUP_STATUS_OPEN,
 		CreatedAt: time.Now(),

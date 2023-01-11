@@ -7,7 +7,6 @@ import (
 	"ochat/models"
 	"ochat/service"
 	"strconv"
-	"time"
 )
 
 // 群联系人 - 列表
@@ -135,11 +134,6 @@ func GroupContactExit(w http.ResponseWriter, r *http.Request) {
 
 		gc.Type = models.GROUP_CONTACT_TYPE_MASTER
 		service.NewGroupContactServ().DB.Where("id = ?", gc.Id).Cols("type", "updated_at").Update(&gc)
-		service.NewGroupServ().DB.Where("id = ?", gc.GroupId).Cols("manager_id", "updated_at").
-			Update(map[string]any{
-				"manager_id": gc.UserId,
-				"updated_at": time.Now(),
-			})
 
 	}
 	// TODO：如果当前群联系人只剩一个人时，退出后，群解散
