@@ -29,11 +29,11 @@ func Init() {
 	// 头像 - 上传
 	http.HandleFunc("/avatar/upload", controllers.AvatarUpload)
 
-	// 申请好友/群 - 查找
+	// 申请好友 - 查找
 	http.HandleFunc("/apply/find", controllers.ApplyFind)
 	// 申请好友/群 - 添加
 	http.HandleFunc("/apply/add", controllers.ApplyAdd)
-	// 申请好友/群 - 查看
+	// 申请好友 - 查看
 	http.HandleFunc("/apply/list", controllers.ApplyList)
 	// 申请好友/群 - 操作
 	http.HandleFunc("/apply/dispose", controllers.ApplyDispose)

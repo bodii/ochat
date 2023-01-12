@@ -95,15 +95,13 @@ func (f *FriendService) Update(friend models.Friend, cols []string) (ok bool, er
 func (f *FriendService) UpdateStatus(r *http.Request, userId int64, status int) (ok bool, err error) {
 	r.ParseForm()
 	friendIdStr := r.PostFormValue("friend_id")
-	friendId, err := strconv.Atoi(friendIdStr)
+	friendId, err := strconv.ParseInt(friendIdStr, 10, 64)
 	if err != nil {
 		return false, err
 	}
 
-	friend := models.Friend{}
-	exitis, err := f.DB.Where(
-		"user_id = ? and friend_id = ?", userId, friendId).Get(&friend)
-	if err != nil || !exitis {
+	friend, err := f.Info(userId, friendId)
+	if err != nil {
 		return false, err
 	}
 
@@ -115,4 +113,11 @@ func (f *FriendService) UpdateStatus(r *http.Request, userId int64, status int) 
 	}
 
 	return true, nil
+}
+
+func (f *FriendService) Info(userId, friendId int64) (friend models.Friend, err error) {
+	_, err = f.DB.Where(
+		"user_id = ? and friend_id = ?", userId, friendId).Get(&friend)
+
+	return
 }

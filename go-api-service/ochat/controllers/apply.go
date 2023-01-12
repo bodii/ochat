@@ -61,31 +61,51 @@ func ApplyAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.ParseForm()
-	addUserIdStr := r.PostFormValue("add_userid") // 被申请的用户
-	comment := r.PostFormValue("comment")         // 留言
+	addIdStr := r.PostFormValue("add_id") // 被申请的用户id/群id
+	comment := r.PostFormValue("comment") // 留言
+	typeValStr := r.PostFormValue("type") // 申请类型
 
-	if addUserIdStr == "" || !funcs.IsNumber(addUserIdStr) {
+	if addIdStr == "" || !funcs.IsNumber(addIdStr) {
 		comm.ResFailure(w, 1001, "the user parameters to be added are incorrect")
 		return
 	}
 
-	addUserId, _ := strconv.ParseInt(addUserIdStr, 10, 64)
-	// 查找
-	_, err := service.NewUserServ().UserIdToUserInfo(addUserId)
-	if err != nil {
-		comm.ResFailure(w, 1004, "user does not exists")
+	if typeValStr == "" || !funcs.IsNumber(typeValStr) {
+		comm.ResFailure(w, 1002, "the type param are incorrect")
+	}
+
+	addId, _ := strconv.ParseInt(addIdStr, 10, 64)
+	typeVal, _ := strconv.Atoi(typeValStr)
+	if typeVal != models.APPLY_TYPE_USER && typeVal != models.APPLY_TYPE_GROUP {
+		comm.ResFailure(w, 1003, "add type are incorrect")
 		return
 	}
 
+	if typeVal == models.APPLY_TYPE_USER {
+		// 查找用户
+		_, err := service.NewUserServ().UserIdToUserInfo(addId)
+		if err != nil {
+			comm.ResFailure(w, 1004, "user does not exists")
+			return
+		}
+	} else if typeVal == models.APPLY_TYPE_GROUP {
+		// 查找群
+		_, err := service.NewGroupServ().Info(addId)
+		if err != nil {
+			comm.ResFailure(w, 1004, "group does not exists")
+			return
+		}
+	}
+
 	// 添加用户申请
-	addData, err := service.NewApplyServ().
-		Add(userInfo.Id, addUserId, comment, models.APPLY_TYPE_USER)
+	data, err := service.NewApplyServ().
+		Add(userInfo.Id, addId, comment, typeVal)
 	if err != nil {
 		comm.ResFailure(w, 1005, "add failure")
 		return
 	}
 
-	comm.ResSuccess(w, addData)
+	comm.ResSuccess(w, data)
 }
 
 // 查看向我申请好友的列表信息
@@ -140,7 +160,7 @@ func ApplyDispose(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// status应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
-	ok, err := service.NewApplyServ().Set(applyId, disposeId, user)
+	ok, err := service.NewApplyServ().SetStatus(applyId, disposeId, user)
 	if err != nil || !ok {
 		comm.ResFailure(w, 1004, "dispose are incorrect")
 		return

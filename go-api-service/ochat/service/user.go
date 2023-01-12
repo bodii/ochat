@@ -186,6 +186,16 @@ func (s *UserService) CreateQrCode(user *models.User) (filename string, err erro
 	return
 }
 
+// 更新字段
+//
+// params:
+//   - fields [url.Values]: 要更新字段传值
+//   - userId [int64]: 更新者的用户id
+//   - resetData [bool]: 是否要返回新的用户信息
+//
+// return:
+//   - user [models.User]: 更新后(取决于resetData是否为true)的用户信息
+//   - err [error]: 不成功时的出错信息
 func (s *UserService) UpdateFields(fileds url.Values, userId int64, resetData bool) (user models.User, err error) {
 	canUpFields := []string{
 		"mobile",   // 手机号

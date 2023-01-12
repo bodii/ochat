@@ -5,7 +5,12 @@ import (
 	"time"
 )
 
-// 获取纳秒的随机种子
+// gets a Rand handle for random nanoseconds
+//
+// param:
+//
+// return:
+//   - [*rand.Rand] rand handle
 func GetUnixNanoRandSeed() *rand.Rand {
 	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }

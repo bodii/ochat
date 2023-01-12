@@ -37,6 +37,15 @@ func RandFileName(suffix string) string {
 		suffix)
 }
 
+// create QrCode func
+//
+// param:
+//   - url [string]: QR Code to url addr.
+//   - pathTag [string]: QR Code save path the tag.
+//
+// return:
+//   - filename [string]: QR Code filename
+//   - err [error]: error info
 func QrCode(url string, pathTag string) (filename string, err error) {
 	filename = RandFileName(".png")
 	filePath := path.Join(GetProjectDIR(), "/files/upload/", pathTag, filename)
@@ -49,6 +58,14 @@ func QrCode(url string, pathTag string) (filename string, err error) {
 	return filename, nil
 }
 
+// copy file func
+//
+// param:
+//   - dst [string]: the target path to save the file
+//   - src [string]: source storage path of the file
+//
+// return:
+//   - err [error]: error info
 func CopyFile(dst string, src string) error {
 	// open src file
 	srcFile, err := os.Open(src)
@@ -73,6 +90,14 @@ func CopyFile(dst string, src string) error {
 	return err
 }
 
+// get the url of the image generated
+//
+// param:
+//   - pathTag [string]: tag of the save path
+//   - filename [string]: filename of the save file
+//
+// return:
+//   - url [string]: the url address is generated successfully
 func GetImgUrl(pathTag, filename string) (url string) {
 	if pathTag == "" || filename == "" {
 		return ""
@@ -82,6 +107,13 @@ func GetImgUrl(pathTag, filename string) (url string) {
 		bootstrap.HTTP_HOST, "files/image", pathTag, filename)
 }
 
+// get a default profile picture based on gender
+//
+// param:
+//   - sex [int]: sex value
+//
+// return:
+//   - filename [string]: filename of the save file
 func DefaultAvatar(sex int) (filename string) {
 	staticAvatarPath := path.Join(GetProjectDIR(), "/files/static/avatar/default/")
 	defaultAvatar := ""
@@ -106,10 +138,25 @@ func DefaultAvatar(sex int) (filename string) {
 	return newFilename
 }
 
+// get upload file path
+//
+// param:
+//   - pathTag [string]: tag of the save path
+//   - filename [string]: filename of the save file
+//
+// return:
+//   - [string]: path to save the file
 func GetUploadFilePath(pathTag, fielname string) string {
 	return path.Join(GetProjectDIR(), "/files/upload/", pathTag, fielname)
 }
 
+// get a default profile picture based on gender
+//
+// param:
+//   - sex [int]: sex value
+//
+// return:
+//   - filename [string]: filename of the save file
 func UploadFile(r *http.Request, upName, pathTag string) (filename, oldFilename string, err error) {
 	file, fileHeader, err := r.FormFile(upName)
 	if err != nil {

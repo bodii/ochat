@@ -6,6 +6,13 @@ import (
 	"strings"
 )
 
+// generates client ip
+//
+// param:
+//   - r [*http.Request]: http request
+//
+// return:
+//   - [string]: ip value
 func ClientIP(r *http.Request) string {
 	xForwardedFor := r.Header.Get("X-Forwarded-For")
 	ip := strings.TrimSpace(strings.Split(xForwardedFor, ",")[0])

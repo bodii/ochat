@@ -20,6 +20,15 @@ func NewGroupContactServ() *GroupContactService {
 	}
 }
 
+// 一个人加入群
+//
+// params:
+//   - user [models.User]: 用户信息
+//   - group [models.Group]: 群信息
+//
+// return:
+//   - gc [*models.GroupContact]: 群联系人信息
+//   - err [error]: 失败的错误内容
 func (g *GroupContactService) Add(user models.User, group models.Group) (
 	gs *models.GroupContact, err error) {
 
@@ -41,6 +50,15 @@ func (g *GroupContactService) Add(user models.User, group models.Group) (
 	return gs, nil
 }
 
+// 多人加入群（含一人）
+//
+// params:
+//   - group [models.Group]: 群信息
+//   - groupId [int64]: 群id
+//
+// return:
+//   - gc [[]*models.GroupContact]: 添加成功的群联系人列表信息
+//   - err [error]: 失败的错误内容
 func (g *GroupContactService) Adds(group models.Group, members ...models.User) (
 	gs []*models.GroupContact, err error) {
 
@@ -67,6 +85,15 @@ func (g *GroupContactService) Adds(group models.Group, members ...models.User) (
 	return gs, nil
 }
 
+// 获取用户在群内的联系人信息
+//
+// params:
+//   - userId [int64]: 用户id
+//   - groupId [int64]: 群id
+//
+// return:
+//   - gc [*models.GroupContact]: 群联系人信息
+//   - err [error]: 失败的错误内容
 func (g *GroupContactService) Info(userId int64, groupId int64) (gc models.GroupContact, err error) {
 	_, err = g.DB.Where("user_id = ? and group_id = ?", userId, groupId).
 		In("status", models.GROUP_CONTACT_STATUS_NORMAL, models.GROUP_CONTACT_STATUS_GROUP_TOP).
@@ -75,6 +102,15 @@ func (g *GroupContactService) Info(userId int64, groupId int64) (gc models.Group
 	return gc, err
 }
 
+// 获取一个群内指定类型的联系人信息
+//
+// params:
+//   - groupId [int64]: 群id
+//   - typeVal [int]: 类型值
+//
+// return:
+//   - gc [*models.GroupContact]: 群联系人信息
+//   - err [error]: 失败的错误内容
 func (g *GroupContactService) TypeInfo(groupId int64, typeVal int) (gc models.GroupContact, err error) {
 	_, err = g.DB.Where("group_id = ? and type = ?", groupId, typeVal).
 		In("status", models.GROUP_CONTACT_STATUS_NORMAL, models.GROUP_CONTACT_STATUS_GROUP_TOP).
@@ -85,6 +121,14 @@ func (g *GroupContactService) TypeInfo(groupId int64, typeVal int) (gc models.Gr
 	return gc, err
 }
 
+// 更新群联系人状态
+//
+// params:
+//   - gc [*models.GroupContact]: 群联系人信息
+//   - status [int]: 状态值
+//
+// return:
+//   - err [error]: 更新失败的错误内容
 func (g *GroupContactService) ChangeStatus(gc *models.GroupContact, status int) (
 	err error) {
 
@@ -103,6 +147,14 @@ func (g *GroupContactService) ChangeStatus(gc *models.GroupContact, status int) 
 	return nil
 }
 
+// 更新群联系人类型
+//
+// params:
+//   - gc [*models.GroupContact]: 群联系人信息
+//   - typeVal [int]: 类型值
+//
+// return:
+//   - err [error]: 更新失败的错误内容
 func (g *GroupContactService) ChangeType(gc *models.GroupContact, typeVal int) (
 	err error) {
 
@@ -121,6 +173,15 @@ func (g *GroupContactService) ChangeType(gc *models.GroupContact, typeVal int) (
 	return nil
 }
 
+// 更新群联系人字段
+//
+// params:
+//   - userId [int64]: 用户id
+//   - groupId [int64]: 群id
+//   - fields [url.Values]: 传入要更新的字段信息
+//
+// return:
+//   - [error]: 更新失败的错误内容
 func (g *GroupContactService) UpdateFields(
 	userId int64, groupId int64, fields url.Values) error {
 

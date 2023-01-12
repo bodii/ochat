@@ -22,7 +22,15 @@ func NewGroupServ() *GroupService {
 	}
 }
 
-func (g *GroupService) UserList(userId int64) (group []*models.Group, err error) {
+// 获取用户的所有有效的群列表信息
+//
+// params:
+//   - userId: current user id
+//
+// return:
+//   - groups [models.Group]: 群列表信息
+//   - err [error]: 不成功时的出错信息
+func (g *GroupService) UserList(userId int64) (groups []*models.Group, err error) {
 	err = g.DB.Table("group").Alias("g").
 		Join("left join", []string{"group_contact", "gc"}, "gc.group_id=g.id").
 		Where("gc.user_id = ? and g.status = ?",
@@ -31,12 +39,22 @@ func (g *GroupService) UserList(userId int64) (group []*models.Group, err error)
 		Desc("gc.status").
 		Asc("gc.id").
 		Cols("g.*").
-		Find(&group)
+		Find(&groups)
 
-	return group, err
+	return groups, err
 }
 
-func (g *GroupService) Add(master models.User, members ...models.User) (
+// 创建当前用户以及其它用户组成的新群
+//
+// params:
+//   - master [models.User]: 发起者用户信息
+//   - members [[]models.User]: 其它用户信息列表
+//
+// return:
+//   - ok [bool]: 是否成功
+//   - gInfo [models.Group]: 群信息
+//   - err [error]: 不成功时的出错信息
+func (g *GroupService) Create(master models.User, members ...models.User) (
 	ok bool, gInfo models.Group, gs []*models.GroupContact, err error) {
 	if master.Id == 0 {
 		return false, gInfo, gs, errors.New("create group failure: creater user info is empty")
@@ -92,6 +110,14 @@ func (g *GroupService) Add(master models.User, members ...models.User) (
 	return true, group, groupContacts, nil
 }
 
+// 查看群信息
+//
+// params:
+//   - groupId [int64]: 群id
+//
+// return:
+//   - group [models.Group]: 群信息
+//   - err [error]: 不成功时的出错信息
 func (g *GroupService) Info(groupId int64) (group models.Group, err error) {
 	ok, err := g.DB.Where("id = ?", groupId).
 		And("status = ?", models.GROUP_STATUS_OPEN).
@@ -103,6 +129,14 @@ func (g *GroupService) Info(groupId int64) (group models.Group, err error) {
 	return
 }
 
+// 创建群二维码
+//
+// params:
+//   - group [*models.Group]: 群信息
+//
+// return:
+//   - filename [string]: 生成的群二维码图片名
+//   - err [error]: 不成功时的出错信息
 func (g *GroupService) CreateQrCode(group *models.Group) (filename string, err error) {
 	// 生成二维码
 	qrCodeUrl := fmt.Sprintf("%s/group?group_id=%d", bootstrap.HTTP_HOST, group.Id)
@@ -122,6 +156,16 @@ func (g *GroupService) CreateQrCode(group *models.Group) (filename string, err e
 	return
 }
 
+// 更新字段
+//
+// params:
+//   - fields [url.Values]: 要更新字段传值
+//   - userId [int64]: 更新者的用户id
+//   - groupId [int64]: 要更新的群id
+//
+// return:
+//   - group [models.Group]: 更新后的群信息
+//   - err [error]: 不成功时的出错信息
 func (g *GroupService) UpdateFields(fields url.Values, userId, groupId int64) (group models.Group, err error) {
 	group, err = NewGroupServ().Info(groupId)
 	if err != nil {
