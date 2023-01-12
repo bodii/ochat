@@ -1,8 +1,10 @@
 package models
 
 const (
+	// 消息类型: 系统信息
+	MESSAGE_TYPE_SYSTEM int = iota
 	// 消息类型: 文字
-	MESSAGE_TYPE_TEXT int = iota + 1
+	MESSAGE_TYPE_TEXT
 	// 消息类型: 图片
 	MESSAGE_TYPE_IMAGE
 	// 消息类型: 表情
@@ -56,7 +58,7 @@ type Message struct {
 	SenderId          int64  `xorm:"bigint index('message_sender_id') not null default 0 comment('发送用户id')" json:"sender_id" form:"sender_id"`
 	ReceiverId        int64  `xorm:"bigint index('message_receiver_id_mode') not null default 0 comment('接收方id, [mode=1]:对方id,[mode=2]:群id')" json:"receiver_id,omitempty" form:"receiver_id"`
 	Mode              int    `xorm:"tinyint index('message_receiver_id_mode') not null default 1 comment('模式,1:单聊;2:群聊')" json:"mode" form:"mode"`
-	Type              int    `xorm:"tinyint not null default 1 comment('消息内容类型,1:文字;2:图片;3:表情;4:录音;5:名片;6:红包;7:音频文件;8:视频文件;9:接龙;10:系统信息')" json:"type" form:"type"`
+	Type              int    `xorm:"tinyint not null default 1 comment('消息内容类型,0:系统消息;1:文字;2:图片;3:表情;4:录音;5:名片;6:红包;7:音频文件;8:视频文件;9:接龙;10:代码')" json:"type" form:"type"`
 	Content           string `xorm:"mediumtext not null comment('消息内容')" json:"content,omitempty" form:"content"`
 	Pic               string `xorm:"varchar(220) not null comment('预览图片')" json:"pic,omitempty" form:"pic"`
 	Url               string `xorm:"varchar(220) not null comment('服务的url')" json:"url,omitempty" form:"url"`

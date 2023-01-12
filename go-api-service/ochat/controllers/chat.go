@@ -131,11 +131,9 @@ func (c *Client) dispatch(data models.Message) {
 	switch data.Mode {
 	case models.MESSAGE_MODE_SINGLE:
 		c.sendMessage(data)
-		// sender.sendMessage(data)
 	case models.MESSAGE_MODE_GROUP:
 		// 是否还存在连接
 		c.sendGroupMessage(data)
-		// sender.sendGroupMessage(data)
 	}
 }
 
@@ -165,8 +163,8 @@ func (c *Client) sendSystemMessage(userId int64, msg string) {
 	c.sendMessage(models.Message{
 		SenderId:   0,
 		ReceiverId: userId,
-		Mode:       1,
-		Type:       10,
+		Mode:       models.MESSAGE_MODE_SINGLE,
+		Type:       models.MESSAGE_TYPE_SYSTEM,
 		Content:    msg,
 	})
 }
