@@ -1,2 +1,2 @@
-*.yaml
-!default*.yaml
+*.toml
+!default*.toml
