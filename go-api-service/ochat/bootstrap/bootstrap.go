@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,6 +25,12 @@ func Init() {
 	DBOnceInit()
 }
 
+// get the project root directory
+//
+// param:
+//
+// return:
+//   - [string]: dir path
 func projectDIR() string {
 	dir, err := os.Getwd()
 
@@ -35,8 +42,14 @@ func projectDIR() string {
 }
 
 // Read the configuration content of a yaml file type
-// Parmas: [file string] filename
-// Returns: Specifies a structure of type [T]
+//
+//	@this is a generic func [T]
+//
+// param:
+//   - file [string]: a string file path
+//
+// return:
+//   - [T]: type
 func readYamlConfig[T any](file string) T {
 	if 1 > strings.LastIndex(file, ".yaml") {
 		panic("input file name not is yaml file")
@@ -52,6 +65,37 @@ func readYamlConfig[T any](file string) T {
 	}
 
 	filename := strings.TrimSuffix(file, ".yaml")
+
+	log.Printf("read %s config succuee!", filename)
+
+	return t
+}
+
+// Read the configuration content of a toml file type
+//
+//	@this is a generic func [T]
+//
+// param:
+//   - file [string]: a string file path
+//
+// return:
+//   - [T]: type
+func readTomlConfig[T any](file string) T {
+	if 1 > strings.LastIndex(file, ".toml") {
+		panic("input file name not is toml file")
+	}
+
+	configPath := path.Join(projectDIR(), "config", file)
+	content, _ := os.ReadFile(configPath)
+
+	var t T
+	err := toml.Unmarshal(content, &t)
+	// fmt.Printf("%#v\n", t)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	filename := strings.TrimSuffix(file, ".toml")
 
 	log.Printf("read %s config succuee!", filename)
 

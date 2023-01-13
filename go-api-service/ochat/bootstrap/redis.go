@@ -17,15 +17,15 @@ var (
 
 // redisList config struct type
 type redisListConfT struct {
-	Client01 redisConfT `yaml:"client_01"`
+	Servs []redisConfT `toml:"redis-server"`
 }
 
 // redis config struct type
 type redisConfT struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
-	Auth string `yaml:"auth"`
-	Db   int    `yaml:"db"`
+	Host string `toml:"host"`
+	Port int    `toml:"port"`
+	Auth string `toml:"auth"`
+	Db   int    `toml:"db"`
 }
 
 func RedisOnceInit() *redis.Client {
@@ -37,7 +37,7 @@ func RedisOnceInit() *redis.Client {
 
 // read  cache.yaml config and set var
 func loadRedisListConfig() redisListConfT {
-	return readYamlConfig[redisListConfT]("redis.yaml")
+	return readTomlConfig[redisListConfT]("redis.toml")
 }
 
 func initRedis() {
@@ -45,7 +45,7 @@ func initRedis() {
 	redisList := loadRedisListConfig()
 
 	// fmt.Printf("%#v\n", redisList)
-	db01 := redisList.Client01
+	db01 := redisList.Servs[0]
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", db01.Host, db01.Port),
 		Password: db01.Auth,

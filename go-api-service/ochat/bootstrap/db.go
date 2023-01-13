@@ -15,17 +15,21 @@ var (
 	mysqlConf    mysqlConfT
 )
 
+type mysqlListConfT struct {
+	DBs []mysqlConfT `toml:"mysql"`
+}
+
 // db mysql config struct type
 type mysqlConfT struct {
-	DriverName  string `yaml:"driver_name"`
-	Host        string `yaml:"host"`
-	Port        int    `yaml:"port"`
-	User        string `yaml:"user"`
-	Password    string `yaml:"password"`
-	Database    string `yaml:"database"`
-	Charset     string `yaml:"charset"`
-	MaxLineNums int    `yaml:"max_line_nums"`
-	ShowSQL     bool   `yaml:"show_sql"`
+	DriverName  string `toml:"driver_name"`
+	Host        string `toml:"host"`
+	Port        int    `toml:"port"`
+	User        string `toml:"user"`
+	Password    string `toml:"password"`
+	Database    string `toml:"database"`
+	Charset     string `toml:"charset"`
+	MaxLineNums int    `toml:"max_line_nums"`
+	ShowSQL     bool   `toml:"show_sql"`
 }
 
 func DBOnceInit() *xorm.Engine {
@@ -38,7 +42,8 @@ func DBOnceInit() *xorm.Engine {
 
 // read  database.yaml config and set var
 func loadDatabaseConfig() {
-	mysqlConf = readYamlConfig[mysqlConfT]("database.yaml")
+	mysqlListConf := readTomlConfig[mysqlListConfT]("database.toml")
+	mysqlConf = mysqlListConf.DBs[0]
 }
 
 func initDbConnect() {

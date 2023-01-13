@@ -24,50 +24,27 @@ func InitSysConfig() {
 
 // system config struct type
 type systemConfT struct {
-	App         appConfT     `yaml:"app"`
-	Serv        servConfT    `yaml:"server"`
-	Avatar      avatarConfT  `yaml:"avatar"`
-	LoginQRCode loginQRCodeT `yaml:"login_qrcode"`
-	UserQRCode  UserQRCodeT  `yaml:"user_qrcode"`
+	App  appConfT  `toml:"app"`
+	Serv servConfT `toml:"server"`
 }
 
 // system->app config struct type
 type appConfT struct {
-	Name     string `yaml:"name"`
-	Document string `yaml:"document"`
-	Env      string `yaml:"env"`
+	Name     string `toml:"name"`
+	Document string `toml:"document"`
+	Env      string `toml:"env"`
 }
 
 // system->serv config struct type
 type servConfT struct {
-	Scheme string `yaml:"scheme"`
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
-}
-
-// system->avatar config struct type
-type avatarConfT struct {
-	FileDir       string `yaml:"file_dir"`
-	SuffixName    string `yaml:"suffix_name"`
-	DefaultAvatar string `yaml:"default_avatar"`
-	UploadDir     string `yaml:"upload_dir"`
-}
-
-// system->login_qrcode config struct type
-type loginQRCodeT struct {
-	FileDir    string `yaml:"file_dir"`
-	SuffixName string `yaml:"suffix_name"`
-}
-
-// system->user_qrcode config struct type
-type UserQRCodeT struct {
-	FileDir    string `yaml:"file_dir"`
-	SuffixName string `yaml:"suffix_name"`
+	Scheme string `toml:"scheme"`
+	Host   string `toml:"host"`
+	Port   int    `toml:"port"`
 }
 
 // read  system.yaml config and set var
 func initSystemConfig() {
-	SystemConf = readYamlConfig[systemConfT]("system.yaml")
+	SystemConf = readTomlConfig[systemConfT]("system.toml")
 	servConf := SystemConf.Serv
 	HTTP_URL := &url.URL{
 		Scheme: servConf.Scheme,
