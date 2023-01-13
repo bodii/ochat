@@ -1,2 +1,2 @@
 *.toml
-!default*.toml
+!*default.toml

@@ -1,0 +1,9 @@
+[app]
+name = "ochat"
+document = ""
+env = "dev" # dev、test、product
+
+[server]
+host = "127.0.0.1"
+port = 8080
+scheme = "http"
