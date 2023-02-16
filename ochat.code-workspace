@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "go-api-service/ochat",
+      "name": "backend"
+    },
+    {
+      "path": "flutter-app-client/ochat",
+      "name": "frontend"
+    },
+    {
+      "path": ".",
+      "name": "root"
+    }
+  ],
+}
