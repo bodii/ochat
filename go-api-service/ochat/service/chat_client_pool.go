@@ -17,7 +17,7 @@ type Pool struct {
 }
 
 func InitClientPool() {
-	ClientPool = NewPool()
+	ClientPool = newPool()
 }
 
 func InitLog() {
@@ -25,7 +25,7 @@ func InitLog() {
 	Log = slog.New(textHandler)
 }
 
-func NewPool() *Pool {
+func newPool() *Pool {
 	return &Pool{
 		Clients: make(map[int64]*Client),
 		Lock:    &sync.RWMutex{},
@@ -33,41 +33,47 @@ func NewPool() *Pool {
 }
 
 // 设置用户Client到链接池
-func SetUserClient(userId int64, client *Client) {
+func setUserClient(userId int64, client *Client) bool {
 	ClientPool.Lock.Lock()
 	defer ClientPool.Lock.Unlock()
 
 	ClientPool.Clients[userId] = client
+
+	return true
 }
 
-func GetUserClient(userId int64) *Client {
+func getUserClient(userId int64) (*Client, bool) {
 	ClientPool.Lock.RLock()
 	defer ClientPool.Lock.RUnlock()
 
-	client := ClientPool.Clients[userId]
-	return client
+	if client, ok := ClientPool.Clients[userId]; ok {
+		return client, ok
+	}
+
+	return nil, false
 }
 
-func DelUserClient(userId int64) *Client {
+func delUserClient(userId int64) (*Client, bool) {
 	ClientPool.Lock.Lock()
 	defer ClientPool.Lock.Unlock()
 
 	if client, ok := ClientPool.Clients[userId]; ok {
 		delete(ClientPool.Clients, userId)
-		return client
+		return client, true
 	}
 
-	return nil
+	return nil, false
 }
 
-func GetClients() map[int64]*Client {
+func getClients() map[int64]*Client {
 	ClientPool.Lock.RLock()
 	defer ClientPool.Lock.RUnlock()
 
 	return ClientPool.Clients
 }
 
-func GetClientsUsersId() []int64 {
+// getClientsUsersId
+func getClientsUsersId() []int64 {
 	ClientPool.Lock.RLock()
 	defer ClientPool.Lock.RUnlock()
 
