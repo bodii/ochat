@@ -22,8 +22,6 @@ type Client struct {
 }
 
 func NewWsCline(ws *websocket.Conn, userId int64, wg *sync.WaitGroup) *Client {
-	wg.Add(1)
-
 	client := &Client{
 		SocketConn: ws,
 		DataQueue:  make(chan *models.Message, 200),
@@ -54,10 +52,9 @@ func (c *Client) Receive() {
 	for {
 		// 接收数据
 		var data models.Message
-		// websocket.JSON.Receive(c.SocketConn, &data)
 		err := websocket.JSON.Receive(c.SocketConn, &data)
 		if err != nil {
-			Log.Error("receive: ", err)
+			Log.Error("receive: ", err, slog.Any("receive data:", data))
 			return
 		}
 

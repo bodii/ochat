@@ -56,7 +56,7 @@ func (g *GroupService) UserList(userId int64) (groups []*models.Group, err error
 //   - err [error]: 不成功时的出错信息
 func (g *GroupService) Create(master models.User, members ...models.User) (
 	ok bool, gInfo models.Group, gs []*models.GroupContact, err error) {
-	if master.Id == 0 {
+	if master.UserId == 0 {
 		return false, gInfo, gs, errors.New("create group failure: creater user info is empty")
 	}
 
@@ -77,7 +77,7 @@ func (g *GroupService) Create(master models.User, members ...models.User) (
 
 	groupContacts := make([]*models.GroupContact, 1)
 	groupContacts[0] = &models.GroupContact{
-		UserId:       master.Id,
+		UserId:       master.UserId,
 		GroupId:      group.Id,
 		GroupAlias:   master.Nickname,
 		Type:         models.GROUP_CONTACT_TYPE_MASTER,
@@ -89,7 +89,7 @@ func (g *GroupService) Create(master models.User, members ...models.User) (
 
 	for _, u := range members {
 		member := &models.GroupContact{
-			UserId:       u.Id,
+			UserId:       u.UserId,
 			GroupId:      group.Id,
 			GroupAlias:   master.Nickname,
 			Type:         models.GROUP_CONTACT_TYPE_MEMBER,

@@ -12,8 +12,8 @@ var ClientPool *Pool
 var Log *slog.Logger
 
 type Pool struct {
-	Pool map[int64]*Client
-	Lock sync.RWMutex
+	Clients map[int64]*Client
+	Lock    *sync.RWMutex
 }
 
 func InitClientPool() {
@@ -27,8 +27,8 @@ func InitLog() {
 
 func NewPool() *Pool {
 	return &Pool{
-		Pool: make(map[int64]*Client),
-		Lock: sync.RWMutex{},
+		Clients: make(map[int64]*Client),
+		Lock:    &sync.RWMutex{},
 	}
 }
 
@@ -37,14 +37,14 @@ func SetUserClient(userId int64, client *Client) {
 	ClientPool.Lock.Lock()
 	defer ClientPool.Lock.Unlock()
 
-	ClientPool.Pool[userId] = client
+	ClientPool.Clients[userId] = client
 }
 
 func GetUserClient(userId int64) *Client {
 	ClientPool.Lock.RLock()
 	defer ClientPool.Lock.RUnlock()
 
-	client := ClientPool.Pool[userId]
+	client := ClientPool.Clients[userId]
 	return client
 }
 
@@ -52,8 +52,8 @@ func DelUserClient(userId int64) *Client {
 	ClientPool.Lock.Lock()
 	defer ClientPool.Lock.Unlock()
 
-	if client, ok := ClientPool.Pool[userId]; ok {
-		delete(ClientPool.Pool, userId)
+	if client, ok := ClientPool.Clients[userId]; ok {
+		delete(ClientPool.Clients, userId)
 		return client
 	}
 
@@ -64,7 +64,7 @@ func GetClients() map[int64]*Client {
 	ClientPool.Lock.RLock()
 	defer ClientPool.Lock.RUnlock()
 
-	return ClientPool.Pool
+	return ClientPool.Clients
 }
 
 func GetClientsUsersId() []int64 {
@@ -72,7 +72,7 @@ func GetClientsUsersId() []int64 {
 	defer ClientPool.Lock.RUnlock()
 
 	userIds := make([]int64, 0)
-	for userid := range ClientPool.Pool {
+	for userid := range ClientPool.Clients {
 		userIds = append(userIds, userid)
 	}
 

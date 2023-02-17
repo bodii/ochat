@@ -42,7 +42,7 @@ func GroupContact(w http.ResponseWriter, r *http.Request) {
 
 	comm.ResSuccess(w, map[string]any{
 		"group_contact_info": groupContact,
-		"is_self":            userId == user.Id,
+		"is_self":            userId == user.UserId,
 	})
 }
 
@@ -67,7 +67,7 @@ func GroupContactKickOut(w http.ResponseWriter, r *http.Request) {
 	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
 	kUserId, _ := strconv.ParseInt(kUserIdStr, 10, 64)
 
-	groupContact, err := service.NewGroupContactServ().Info(user.Id, groupId)
+	groupContact, err := service.NewGroupContactServ().Info(user.UserId, groupId)
 	if err != nil {
 		comm.ResFailure(w, 2001, "change failure")
 		return
@@ -111,7 +111,7 @@ func GroupContactExit(w http.ResponseWriter, r *http.Request) {
 	}
 	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
 
-	groupContact, err := service.NewGroupContactServ().Info(user.Id, groupId)
+	groupContact, err := service.NewGroupContactServ().Info(user.UserId, groupId)
 	if err != nil {
 		comm.ResFailure(w, 2001, "change failure")
 		return
@@ -165,7 +165,7 @@ func GroupContactTop(w http.ResponseWriter, r *http.Request) {
 	}
 	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
 
-	groupContact, err := service.NewGroupContactServ().Info(user.Id, groupId)
+	groupContact, err := service.NewGroupContactServ().Info(user.UserId, groupId)
 	if err != nil {
 		comm.ResFailure(w, 2001, "change failure")
 		return
@@ -212,12 +212,12 @@ func GroupContactManager(w http.ResponseWriter, r *http.Request) {
 
 	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
 	memberId, _ := strconv.ParseInt(memberIdStr, 10, 64)
-	if user.Id == memberId {
+	if user.UserId == memberId {
 		comm.ResFailure(w, 2101, "current user and input member is the same person")
 		return
 	}
 
-	userGroupContact, err := service.NewGroupContactServ().Info(user.Id, groupId)
+	userGroupContact, err := service.NewGroupContactServ().Info(user.UserId, groupId)
 	if err != nil {
 		comm.ResFailure(w, 2101, "current user the group contact info is exists")
 		return
@@ -273,7 +273,7 @@ func GroupContactUpField(w http.ResponseWriter, r *http.Request) {
 	}
 
 	groupId, _ := strconv.ParseInt(groupIdstr, 10, 64)
-	err := service.NewGroupContactServ().UpdateFields(user.Id, groupId, r.PostForm)
+	err := service.NewGroupContactServ().UpdateFields(user.UserId, groupId, r.PostForm)
 	if err != nil {
 		comm.ResFailure(w, 1001, err.Error())
 		return

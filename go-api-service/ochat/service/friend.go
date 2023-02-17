@@ -44,8 +44,8 @@ func (f *FriendService) List(userId int64, status int) (users []models.User, err
 func (f *FriendService) Adds(pet models.User, res models.User) (ok bool, err error) {
 	friends := make([]*models.Friend, 2)
 	friends[0] = &models.Friend{
-		UserId:      res.Id,
-		FriendId:    pet.Id,
+		UserId:      res.UserId,
+		FriendId:    pet.UserId,
 		FriendAlias: pet.Nickname,
 		AliasPrefix: funcs.StrPrefix(pet.Nickname, 1, 2),
 		Status:      models.FRIEND_STATUS_FRIENDED,
@@ -53,8 +53,8 @@ func (f *FriendService) Adds(pet models.User, res models.User) (ok bool, err err
 		UpdatedAt:   time.Now(),
 	}
 	friends[1] = &models.Friend{
-		UserId:      pet.Id,
-		FriendId:    res.Id,
+		UserId:      pet.UserId,
+		FriendId:    res.UserId,
 		FriendAlias: res.Nickname,
 		AliasPrefix: funcs.StrPrefix(res.Nickname, 1, 2),
 		Status:      models.FRIEND_STATUS_FRIENDED,

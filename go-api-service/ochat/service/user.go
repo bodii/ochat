@@ -28,18 +28,18 @@ func (s *UserService) Register(
 	mobile, username, avatar, nickname, password string,
 	sex int) (user models.User, err error) {
 
-	userInfo, err := s.MobileToUserInfo(mobile)
+	user, err = s.MobileTouser(mobile)
 	// 信息验证
-	if err == nil && userInfo.Id > 0 {
+	if err == nil && user.UserId > 0 {
 		errStr := "the user to which the current mobile phone number belongs exists"
-		return userInfo, errors.New(errStr)
+		return user, errors.New(errStr)
 	}
 
 	salt := funcs.RandStr(12, funcs.Rand_Str_Level_5)
 	token := funcs.GenerateToken(password + salt)
 
 	// 构建用户数据
-	userInfo = models.User{
+	user = models.User{
 		Mobile:    mobile,
 		Username:  username,
 		Avatar:    avatar,
@@ -54,21 +54,21 @@ func (s *UserService) Register(
 	}
 
 	// 保存数据
-	if num, err := s.DB.InsertOne(&userInfo); err != nil || num == 0 {
+	if num, err := s.DB.InsertOne(&user); err != nil || num == 0 {
 		errStr := "user data insert database failure"
-		return userInfo, errors.New(errStr)
+		return user, errors.New(errStr)
 	}
 
-	return userInfo, nil
+	return user, nil
 }
 
 func (s *UserService) Login(mobile, password string) (user models.User, err error) {
-	user, err = s.MobileToUserInfo(mobile)
+	user, err = s.MobileTouser(mobile)
 	if err != nil {
 		return
 	}
 
-	if user.Id == 0 {
+	if user.UserId == 0 {
 		return
 	}
 
@@ -86,7 +86,7 @@ func (s *UserService) Login(mobile, password string) (user models.User, err erro
 }
 
 func (s *UserService) UpToken(user models.User) (models.User, error) {
-	if user.Id == 0 || user.Token == "" {
+	if user.UserId == 0 || user.Token == "" {
 		return models.User{}, errors.New("update failure")
 	}
 
@@ -94,7 +94,7 @@ func (s *UserService) UpToken(user models.User) (models.User, error) {
 	if token != user.Token {
 		user.Token = token
 		user.UpdatedAt = time.Now()
-		num, err := s.DB.ID(user.Id).Cols("token", "updated_at").Update(&user)
+		num, err := s.DB.ID(user.UserId).Cols("token", "updated_at").Update(&user)
 		if err != nil || num < 1 {
 			return user, errors.New("update failure")
 		}
@@ -104,8 +104,8 @@ func (s *UserService) UpToken(user models.User) (models.User, error) {
 }
 
 func (s *UserService) CheckToken(user_id int64, token string) bool {
-	user, err := s.UserIdToUserInfo(user_id)
-	if err != nil || user.Id == 0 || user.Token == "" {
+	user, err := s.UserIdTouser(user_id)
+	if err != nil || user.UserId == 0 || user.Token == "" {
 		return false
 	}
 
@@ -116,52 +116,52 @@ func (s *UserService) CheckToken(user_id int64, token string) bool {
 	return true
 }
 
-func (s *UserService) MobileToUserInfo(mobile string) (models.User, error) {
+func (s *UserService) MobileTouser(mobile string) (models.User, error) {
 	var user models.User
 	_, err := s.DB.Where("mobile = ?", mobile).Get(&user)
 
 	return user, err
 }
 
-func (s *UserService) UserIdToUserInfo(userId int64) (models.User, error) {
+func (s *UserService) UserIdTouser(userId int64) (models.User, error) {
 	var user models.User
-	_, err := s.DB.Where("id = ?", userId).Get(&user)
+	_, err := s.DB.Where("user_id = ?", userId).Get(&user)
 
 	return user, err
 }
 
-func (s *UserService) UsernameToUserInfo(username string) (models.User, error) {
+func (s *UserService) UsernameTouser(username string) (models.User, error) {
 	var user models.User
 	_, err := s.DB.Where("username = ?", username).Get(&user)
 
 	return user, err
 }
 
-func (s *UserService) CheckUserRequestLegal(r *http.Request) (userInfo models.User, code int, errStr string) {
+func (s *UserService) CheckUserRequestLegal(r *http.Request) (user models.User, code int, errStr string) {
 	userIdStr := r.FormValue("user_id") // 用户id
 	token := r.FormValue("token")       // 用户token
 
 	if userIdStr == "" || !funcs.IsNumber(userIdStr) {
-		return userInfo, 101, "the user id params is empty or is illegal"
+		return user, 101, "the user id params is empty or is illegal"
 	}
 
 	if token == "" {
-		return userInfo, 102, "the user token params is empty"
+		return user, 102, "the user token params is empty"
 	}
 
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
-		return userInfo, 103, "the user id params is illegal"
+		return user, 103, "the user id params is illegal"
 	}
 
-	userInfo, err = s.UserIdToUserInfo(userId)
-	if err != nil || userInfo.Id == 0 {
-		return userInfo, 104, "user are dose not exists"
+	user, err = s.UserIdTouser(userId)
+	if err != nil || user.UserId == 0 {
+		return user, 104, "user are dose not exists"
 	}
 
 	// 验证token是否合法
-	if userInfo.Token != token {
-		return userInfo, 105, "token parameter validation failed"
+	if user.Token != token {
+		return user, 105, "token parameter validation failed"
 	}
 
 	return
@@ -169,7 +169,7 @@ func (s *UserService) CheckUserRequestLegal(r *http.Request) (userInfo models.Us
 
 func (s *UserService) CreateQrCode(user *models.User) (filename string, err error) {
 	// 生成二维码
-	qrCodeUrl := fmt.Sprintf("%s/user?user_id=%d", bootstrap.HTTP_HOST, user.Id)
+	qrCodeUrl := fmt.Sprintf("%s/user?user_id=%d", bootstrap.HTTP_HOST, user.UserId)
 	filename, err = funcs.QrCode(qrCodeUrl, "user_qrcode")
 	if err != nil {
 		return "", err
@@ -178,7 +178,7 @@ func (s *UserService) CreateQrCode(user *models.User) (filename string, err erro
 	user.QrCode = funcs.GetImgUrl("user_qrcode", filename)
 	user.UpdatedAt = time.Now()
 
-	num, err := s.DB.Where("id =?", user.Id).Cols("qr_code", "updated_at").Update(&user)
+	num, err := s.DB.Where("user_id =?", user.UserId).Cols("qr_code", "updated_at").Update(&user)
 	if err != nil || num < 1 {
 		return "", errors.New("update failure")
 	}
@@ -221,7 +221,7 @@ func (s *UserService) UpdateFields(fileds url.Values, userId int64, resetData bo
 
 	upFields["updated_at"] = funcs.UpdateTime()
 
-	_, err = s.DB.Table("user").Where("id = ?", userId).Update(upFields)
+	_, err = s.DB.Table("user").Where("user_id = ?", userId).Update(upFields)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -230,7 +230,7 @@ func (s *UserService) UpdateFields(fileds url.Values, userId int64, resetData bo
 		return models.User{}, nil
 	}
 
-	user, err = s.UserIdToUserInfo(userId)
+	user, err = s.UserIdTouser(userId)
 	if err != nil {
 		return user, errors.New("get user info failure")
 	}

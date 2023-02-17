@@ -25,7 +25,7 @@ func AvatarUpload(w http.ResponseWriter, r *http.Request) {
 
 	r.PostForm.Add("avatar", url)
 	user.Avatar = url
-	_, err = service.NewUserServ().UpdateFields(r.PostForm, user.Id, false)
+	_, err = service.NewUserServ().UpdateFields(r.PostForm, user.UserId, false)
 	if err != nil {
 		comm.ResFailure(w, 1201, err.Error())
 		return

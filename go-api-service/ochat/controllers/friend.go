@@ -11,7 +11,7 @@ import (
 // 好友 - 列表
 func FriendList(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
@@ -26,7 +26,7 @@ func FriendList(w http.ResponseWriter, r *http.Request) {
 
 	status, _ := strconv.Atoi(statusStr)
 
-	users, err := service.NewFriendServ().List(userInfo.Id, status)
+	users, err := service.NewFriendServ().List(user.UserId, status)
 	if err != nil || len(users) == 0 {
 		comm.ResFailure(w, 2001, "not exists")
 		return
@@ -54,7 +54,7 @@ func FriendAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	friend, err := service.NewUserServ().UserIdToUserInfo(friendId)
+	friend, err := service.NewUserServ().UserIdTouser(friendId)
 	if err != nil {
 		comm.ResFailure(w, 1201, "friend info is exists")
 		return
@@ -83,7 +83,7 @@ func FriendToBlacklist(w http.ResponseWriter, r *http.Request) {
 
 	// 如果好友的状态是普通
 	ok, err := service.NewFriendServ().UpdateStatus(
-		r, user.Id, models.FRIEND_STATUS_BLACKLIST)
+		r, user.UserId, models.FRIEND_STATUS_BLACKLIST)
 	if err != nil || !ok {
 		comm.ResFailure(w, 1101, err.Error())
 		return
@@ -103,7 +103,7 @@ func FriendToHide(w http.ResponseWriter, r *http.Request) {
 
 	// 如果好友的状态是普通
 	ok, err := service.NewFriendServ().UpdateStatus(
-		r, user.Id, models.FRIEND_STATUS_HIDE)
+		r, user.UserId, models.FRIEND_STATUS_HIDE)
 	if err != nil || !ok {
 		comm.ResFailure(w, 1101, err.Error())
 		return
@@ -123,7 +123,7 @@ func FriendToTop(w http.ResponseWriter, r *http.Request) {
 
 	// 如果好友的状态是普通
 	ok, err := service.NewFriendServ().UpdateStatus(
-		r, user.Id, models.FRIEND_STATUS_TOP)
+		r, user.UserId, models.FRIEND_STATUS_TOP)
 	if err != nil || !ok {
 		comm.ResFailure(w, 1101, err.Error())
 		return
@@ -152,7 +152,7 @@ func FriendUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	friend, err := service.NewUserServ().UserIdToUserInfo(friendId)
+	friend, err := service.NewUserServ().UserIdTouser(friendId)
 	if err != nil {
 		comm.ResFailure(w, 1201, "friend info is exists")
 		return

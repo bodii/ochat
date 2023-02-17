@@ -1,6 +1,6 @@
 drop table if exists message;
 create table message (
-    id bigint not null auto_increment primary key comment '消息id',
+    req_id varchar(30) not null primary key comment '消息id',
     mode tinyint not null default 1 comment '模式,1:单聊;2:群聊',
     sender_id int not null default 0 comment '发送用户id',
     receiver_id bigint not null default 0 comment '接收方id, [mode=1]:对方id,[mode=2]:群id',

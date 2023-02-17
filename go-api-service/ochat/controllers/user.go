@@ -14,18 +14,18 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	mobile := r.PostForm.Get("mobile")
 	password := r.PostForm.Get("password")
 
-	userInfo, err := service.NewUserServ().Login(mobile, password)
+	user, err := service.NewUserServ().Login(mobile, password)
 	if err != nil {
 		comm.ResFailure(w, 1001, err.Error())
 		return
 	}
 
-	if userInfo.Id == 0 {
+	if user.UserId == 0 {
 		comm.ResFailure(w, 1002, "failure: user data is empty")
 		return
 	}
 
-	comm.ResSuccess(w, userInfo)
+	comm.ResSuccess(w, user)
 }
 
 func UserRegister(w http.ResponseWriter, r *http.Request) {
@@ -62,31 +62,31 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 		nickname = funcs.RandStr(20, 5)
 	}
 
-	userInfo, err := service.NewUserServ().Register(mobile, username, avatar, nickname, passwd, sex)
+	user, err := service.NewUserServ().Register(mobile, username, avatar, nickname, passwd, sex)
 	if err != nil {
 		comm.ResFailure(w, 1001, "register failure: "+err.Error())
 		return
 	}
 
-	if userInfo.Id == 0 {
+	if user.UserId == 0 {
 		comm.ResFailure(w, 1001, "register failure: not insert data")
 		return
 	}
 
-	comm.ResSuccess(w, userInfo)
+	comm.ResSuccess(w, user)
 }
 
 func UserQrCode(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
 	}
 
 	// 如果二维码不存在，则创建
-	if userInfo.QrCode == "" {
-		_, err := service.NewUserServ().CreateQrCode(&userInfo)
+	if user.QrCode == "" {
+		_, err := service.NewUserServ().CreateQrCode(&user)
 		if err != nil {
 			comm.ResFailure(w, 3001, "create qr code failure")
 			return
@@ -94,23 +94,23 @@ func UserQrCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	comm.ResSuccess(w, comm.D{
-		"user_info": userInfo,
+		"user_info": user,
 	})
 }
 
 func UserUpField(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
 	}
 
 	r.ParseForm()
-	userInfo, err := service.NewUserServ().UpdateFields(r.PostForm, userInfo.Id, true)
+	user, err := service.NewUserServ().UpdateFields(r.PostForm, user.UserId, true)
 	if err != nil {
 		comm.ResFailure(w, 1001, err.Error())
 	}
 
-	comm.ResSuccess(w, userInfo)
+	comm.ResSuccess(w, user)
 }

@@ -33,7 +33,7 @@ func (g *GroupContactService) Add(user models.User, group models.Group) (
 	gs *models.GroupContact, err error) {
 
 	gs = &models.GroupContact{
-		UserId:       user.Id,
+		UserId:       user.UserId,
 		GroupId:      group.Id,
 		GroupAlias:   group.Name,
 		Type:         models.GROUP_CONTACT_TYPE_MEMBER,
@@ -64,7 +64,7 @@ func (g *GroupContactService) Adds(group models.Group, members ...models.User) (
 
 	for _, u := range members {
 		gsInfo := &models.GroupContact{
-			UserId:       u.Id,
+			UserId:       u.UserId,
 			GroupId:      group.Id,
 			GroupAlias:   group.Name,
 			Type:         models.GROUP_CONTACT_TYPE_MEMBER,

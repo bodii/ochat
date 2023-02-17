@@ -1,6 +1,6 @@
 drop table if exists user;
 create table user (
-    id bigint not null auto_increment primary key comment '用户id,user_id',
+    user_id bigint not null auto_increment primary key comment '用户id,user_id',
     mobile varchar(20) unique not null default '' comment '手机号',
     username varchar(25) unique not null default '' comment '用户名',
     nickname varchar(30) not null default '' comment '用户昵称',

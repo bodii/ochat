@@ -57,16 +57,16 @@ func (a *ApplyService) Add(userId, addUserId int64, comment string, addType int)
 //
 // return: user list or error
 func (a *ApplyService) List(userId int64, status, applyType int) ([]models.User, error) {
-	userInfos := make([]models.User, 0)
+	users := make([]models.User, 0)
 
-	err := a.DB.Table("apply").Join("left", "user", "apply.petitioner = user.id").
+	err := a.DB.Table("apply").Join("left", "user", "apply.petitioner = user.UserId").
 		Where(
 			"apply.responder = ? and apply.status = ? and apply.type = ?",
 			userId, status, applyType).
 		Asc("id").
-		Find(&userInfos)
+		Find(&users)
 
-	return userInfos, err
+	return users, err
 }
 
 // 设置/更新申请状态
@@ -85,7 +85,7 @@ func (a *ApplyService) SetStatus(id int64, status int, user models.User) (bool, 
 
 	// 查询申请信息
 	apply := models.Apply{}
-	exists, err := a.DB.Where("id = ? and responder = ?", id, user.Id).
+	exists, err := a.DB.Where("id = ? and responder = ?", id, user.UserId).
 		And("type = ?", models.APPLY_TYPE_USER).
 		Get(&apply)
 	if err != nil || !exists {
@@ -102,12 +102,12 @@ func (a *ApplyService) SetStatus(id int64, status int, user models.User) (bool, 
 	// 如果是添加，先查询是否已存在
 	if status == models.APPLY_STATUS_AGREE {
 		if apply.Type == models.APPLY_TYPE_USER {
-			firend, err := NewFriendServ().Info(user.Id, id)
+			firend, err := NewFriendServ().Info(user.UserId, id)
 			if err == nil && firend.Id > 0 {
 				return false, errors.New("current friend exists")
 			}
 		} else if apply.Type == models.APPLY_TYPE_GROUP {
-			groupContact, err := NewGroupContactServ().Info(user.Id, id)
+			groupContact, err := NewGroupContactServ().Info(user.UserId, id)
 			if err == nil && groupContact.Id > 0 {
 				return false, errors.New("current group contact exists")
 			}
@@ -117,7 +117,7 @@ func (a *ApplyService) SetStatus(id int64, status int, user models.User) (bool, 
 	// 添加好友信息
 	if status == models.APPLY_STATUS_AGREE {
 		if apply.Type == models.APPLY_TYPE_USER {
-			friend, err := NewUserServ().UserIdToUserInfo(apply.Petitioner)
+			friend, err := NewUserServ().UserIdTouser(apply.Petitioner)
 			if err != nil {
 				return false, err
 			}

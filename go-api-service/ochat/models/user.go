@@ -20,7 +20,7 @@ const (
 
 // 接入鉴权/用户信息表
 type User struct {
-	Id        int64     `xorm:"pk autoincr bigint not null comment('用户id,user_id')" form:"id" json:"id"`
+	UserId    int64     `xorm:"pk autoincr bigint not null comment('用户id,user_id')" form:"user_id" json:"user_id"`
 	Mobile    string    `xorm:"varchar(20) unique not null default '' comment('手机号')" form:"mobile" json:"mobile"`
 	Username  string    `xorm:"varchar(25) unique not null default '' comment('用户名')" form:"username" json:"username"`
 	Nickname  string    `xorm:"varchar(30) not null default '' comment('用户昵称')" form:"nickname" json:"nickname"`

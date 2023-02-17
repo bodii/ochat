@@ -21,14 +21,14 @@ func PhoneSms(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId, _ := strconv.ParseInt(userIdStr, 10, 64)
-	userInfo, err := service.NewUserServ().UserIdToUserInfo(userId)
+	user, err := service.NewUserServ().UserIdTouser(userId)
 	if err != nil {
 		comm.ResFailure(w, 1002, "user are dose not exists")
 		return
 	}
 
 	// 验证token是否合法
-	if userInfo.Token != token {
+	if user.Token != token {
 		comm.ResFailure(w, 1003, "token parameter validation failed")
 		return
 	}
@@ -51,7 +51,7 @@ func PhoneSms(w http.ResponseWriter, r *http.Request) {
 // verify that the mobile phone verification code is valid
 func PhoneSmsVerify(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
@@ -84,5 +84,5 @@ func PhoneSmsVerify(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 返回成功
-	comm.ResSuccess(w, userInfo)
+	comm.ResSuccess(w, user)
 }

@@ -39,7 +39,7 @@ func ApplyFind(w http.ResponseWriter, r *http.Request) {
 	// 查找
 	service.NewUserServ().DB.Where(condition, findUsernameOrMobile).Get(&user)
 
-	if user.Id == 0 {
+	if user.UserId == 0 {
 		comm.ResFailure(
 			w,
 			1002,
@@ -54,7 +54,7 @@ func ApplyFind(w http.ResponseWriter, r *http.Request) {
 // 发起申请添加好友
 func ApplyAdd(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
@@ -83,7 +83,7 @@ func ApplyAdd(w http.ResponseWriter, r *http.Request) {
 
 	if typeVal == models.APPLY_TYPE_USER {
 		// 查找用户
-		_, err := service.NewUserServ().UserIdToUserInfo(addId)
+		_, err := service.NewUserServ().UserIdTouser(addId)
 		if err != nil {
 			comm.ResFailure(w, 1004, "user does not exists")
 			return
@@ -99,7 +99,7 @@ func ApplyAdd(w http.ResponseWriter, r *http.Request) {
 
 	// 添加用户申请
 	data, err := service.NewApplyServ().
-		Add(userInfo.Id, addId, comment, typeVal)
+		Add(user.UserId, addId, comment, typeVal)
 	if err != nil {
 		comm.ResFailure(w, 1005, "add failure")
 		return
@@ -111,14 +111,14 @@ func ApplyAdd(w http.ResponseWriter, r *http.Request) {
 // 查看向我申请好友的列表信息
 func ApplyList(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
 	}
 
 	// status应答者是否同意,-1:拒绝;0:未查看;1:已查看;2:同意
-	users, err := service.NewApplyServ().List(userInfo.Id,
+	users, err := service.NewApplyServ().List(user.UserId,
 		models.APPLY_STATUS_UNREAD, models.APPLY_TYPE_USER)
 	if err != nil || len(users) == 0 {
 		comm.ResFailure(w, 1002, "the query is incorrect or does not exist")

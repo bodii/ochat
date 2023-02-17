@@ -35,11 +35,11 @@ func LoginQRCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginQRCodeScan(w http.ResponseWriter, r *http.Request) {
-	userInfo, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
 	}
 
-	comm.ResSuccess(w, userInfo)
+	comm.ResSuccess(w, user)
 }

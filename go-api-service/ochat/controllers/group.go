@@ -43,7 +43,7 @@ func GroupList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groups, err := service.NewGroupServ().UserList(user.Id)
+	groups, err := service.NewGroupServ().UserList(user.UserId)
 	if err != nil {
 		comm.ResFailure(w, 2101, err.Error())
 		return
@@ -68,7 +68,7 @@ func GroupUpFiled(w http.ResponseWriter, r *http.Request) {
 	}
 	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
 
-	group, err := service.NewGroupServ().UpdateFields(r.PostForm, user.Id, groupId)
+	group, err := service.NewGroupServ().UpdateFields(r.PostForm, user.UserId, groupId)
 	if err != nil {
 		comm.ResFailure(w, 2001, err.Error())
 		return
