@@ -49,6 +49,11 @@ func RandFileName(suffix string) string {
 func QrCode(url string, pathTag string) (filename string, err error) {
 	filename = RandFileName(".png")
 	filePath := path.Join(GetProjectDIR(), "/files/upload/", pathTag, filename)
+	saveRealPath := filepath.Dir(filePath)
+	if ok, _ := PathExists(saveRealPath); !ok {
+		os.MkdirAll(saveRealPath, os.ModePerm)
+	}
+
 	err = qrcode.WriteFile(url, qrcode.Medium, 256, filePath)
 	if err != nil {
 		log.Printf(" %s create %s failure\n", url, pathTag)
@@ -129,6 +134,11 @@ func DefaultAvatar(sex int) (filename string) {
 
 	newFilename := RandFileName(".png")
 	newAvatarPath := GetUploadFilePath("avatar", newFilename)
+	saveRealPath := filepath.Dir(newAvatarPath)
+	if ok, _ := PathExists(saveRealPath); !ok {
+		os.MkdirAll(saveRealPath, os.ModePerm)
+	}
+
 	// copy file
 	err := CopyFile(newAvatarPath, staticAvatarPath)
 	if err != nil {
@@ -136,6 +146,17 @@ func DefaultAvatar(sex int) (filename string) {
 	}
 
 	return newFilename
+}
+
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 // get upload file path
@@ -166,9 +187,14 @@ func UploadFile(r *http.Request, upName, pathTag string) (filename, oldFilename 
 
 	oldFilename = fileHeader.Filename
 	filename = RandFileName(filepath.Ext(oldFilename))
-	filepath := GetUploadFilePath(pathTag, filename)
+	filePath := GetUploadFilePath(pathTag, filename)
 
-	savePath, err := os.Create(filepath)
+	saveRealPath := filepath.Dir(filePath)
+	if ok, _ := PathExists(saveRealPath); !ok {
+		os.MkdirAll(saveRealPath, os.ModePerm)
+	}
+
+	savePath, err := os.Create(filePath)
 	if err != nil {
 		return filename, oldFilename, err
 	}

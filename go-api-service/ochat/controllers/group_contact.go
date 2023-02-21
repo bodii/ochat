@@ -12,13 +12,21 @@ import (
 // 群联系人 - 列表
 func GroupContactList(w http.ResponseWriter, r *http.Request) {
 	// verify user legal
-	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	_, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
 		comm.ResFailure(w, code, errStr)
 		return
 	}
 
-	comm.ResSuccess(w, user)
+	groupIdStr := r.FormValue("group_id")
+	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
+
+	contactList, err := service.NewGroupContactServ().GetMembers(groupId)
+	if err != nil {
+		comm.ResFailure(w, 2101, "get failure")
+	}
+
+	comm.ResSuccess(w, contactList)
 }
 
 // 群联系人 - 查看

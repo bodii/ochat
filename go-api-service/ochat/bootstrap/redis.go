@@ -2,10 +2,10 @@ package bootstrap
 
 import (
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/go-redis/redis/v8"
+	"golang.org/x/exp/slog"
 	"golang.org/x/net/context"
 )
 
@@ -59,5 +59,5 @@ func initRedis() {
 		panic(err)
 	}
 
-	log.Println("init redis success!")
+	slog.Info("init redis success!")
 }

@@ -1,39 +1,30 @@
 package service
 
 import (
-	"os"
 	"sync"
-
-	"golang.org/x/exp/slog"
 )
 
 // 连接池
-var ClientPool *Pool
-var Log *slog.Logger
-
-type Pool struct {
-	Clients map[int64]*Client
-	Lock    *sync.RWMutex
-}
+var ClientPool *PoolT
 
 func InitClientPool() {
 	ClientPool = newPool()
 }
 
-func InitLog() {
-	textHandler := slog.NewTextHandler(os.Stdout)
-	Log = slog.New(textHandler)
+type PoolT struct {
+	Clients map[int64]*ClientT
+	Lock    *sync.RWMutex
 }
 
-func newPool() *Pool {
-	return &Pool{
-		Clients: make(map[int64]*Client),
+func newPool() *PoolT {
+	return &PoolT{
+		Clients: make(map[int64]*ClientT),
 		Lock:    &sync.RWMutex{},
 	}
 }
 
 // 设置用户Client到链接池
-func setUserClient(userId int64, client *Client) bool {
+func setUserClient(userId int64, client *ClientT) bool {
 	ClientPool.Lock.Lock()
 	defer ClientPool.Lock.Unlock()
 
@@ -42,7 +33,7 @@ func setUserClient(userId int64, client *Client) bool {
 	return true
 }
 
-func getUserClient(userId int64) (*Client, bool) {
+func getUserClient(userId int64) (*ClientT, bool) {
 	ClientPool.Lock.RLock()
 	defer ClientPool.Lock.RUnlock()
 
@@ -53,7 +44,7 @@ func getUserClient(userId int64) (*Client, bool) {
 	return nil, false
 }
 
-func delUserClient(userId int64) (*Client, bool) {
+func delUserClient(userId int64) (*ClientT, bool) {
 	ClientPool.Lock.Lock()
 	defer ClientPool.Lock.Unlock()
 
@@ -65,7 +56,7 @@ func delUserClient(userId int64) (*Client, bool) {
 	return nil, false
 }
 
-func getClients() map[int64]*Client {
+func getClients() map[int64]*ClientT {
 	ClientPool.Lock.RLock()
 	defer ClientPool.Lock.RUnlock()
 

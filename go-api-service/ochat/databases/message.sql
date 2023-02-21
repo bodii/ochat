@@ -1,9 +1,10 @@
 drop table if exists message;
 create table message (
-    req_id varchar(30) not null primary key comment '消息id',
+    id bigint not null auto_increment primary key comment '消息id',
     mode tinyint not null default 1 comment '模式,1:单聊;2:群聊',
-    sender_id int not null default 0 comment '发送用户id',
-    receiver_id bigint not null default 0 comment '接收方id, [mode=1]:对方id,[mode=2]:群id',
+    sender_id bigint not null default 0 comment '发送用户id',
+    receiver_id bigint not null default 0 comment '接收方id',
+    group_id bigint not null default 0 comment '当mode=2,要发送的群id',
     type tinyint not null default 1 comment '消息内容类型,0:系统消息;1:文字;2:图片;3:表情;4:录音;5:名片;6:红包;7:音频文件;8:视频文件;9:接龙;10:代码',
     content mediumtext not null  comment '消息内容，或实体(如图片)链接',
     pic varchar(220) not null default '' comment '预览图片',
@@ -18,6 +19,7 @@ create table message (
     receiver_updated_at datetime(6) not null comment '收接者已读时间',
     key message_receiver_id_mode(receiver_id,mode),
     key message_sender_id(sender_id),
+    key message_group_id(group_id),
     key message_sender_status(sender_status),
     key message_receiver_status(receiver_status)
 ) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci comment '消息表';

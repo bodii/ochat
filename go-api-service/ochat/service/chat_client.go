@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-type Client struct {
+type ClientT struct {
 	SocketConn *websocket.Conn      // socket连接
 	DataQueue  chan *models.Message // 待发送的数据
 	Addr       string               // 客户端地址
@@ -22,7 +22,7 @@ type Client struct {
 }
 
 // 接收信息
-type ReceiveMessage struct {
+type ReceiveMessageT struct {
 	From    int64  `json:"from" form:"from"`
 	To      int64  `json:"to,omitempty" form:"to"`
 	Mode    int    `json:"mode" form:"mode"`
@@ -34,11 +34,11 @@ type ReceiveMessage struct {
 	Amount  int    `json:"amount,omitempty" form:"amount"`
 }
 
-func NewWsCline(ws *websocket.Conn, userId int64) *Client {
+func NewWsCline(ws *websocket.Conn, userId int64) *ClientT {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
-	client := &Client{
+	client := &ClientT{
 		SocketConn: ws,
 		DataQueue:  make(chan *models.Message, 800),
 		Addr:       ws.RemoteAddr().String(),
@@ -53,7 +53,7 @@ func NewWsCline(ws *websocket.Conn, userId int64) *Client {
 }
 
 // 接收协程
-func (c *Client) Receive() {
+func (c *ClientT) Receive() {
 	fmt.Println("start receive")
 	defer func() {
 		if r := recover(); r != nil {
@@ -65,11 +65,11 @@ func (c *Client) Receive() {
 
 	for {
 		// 接收数据
-		var data ReceiveMessage
+		var data ReceiveMessageT
 		err := websocket.JSON.Receive(c.SocketConn, &data)
 		fmt.Println("data===========:", data)
 		if err != nil {
-			Log.Error("receive: ", err, slog.Any("receive data:", data))
+			slog.Error("receive: ", err, slog.Any("receive data:", data))
 			return
 		}
 
@@ -77,7 +77,7 @@ func (c *Client) Receive() {
 			continue
 		}
 
-		Log.Info("recv <<<< :",
+		slog.Info("recv <<<< :",
 			slog.String("client addr", c.Addr),
 			slog.Any("receive data", data))
 
@@ -91,7 +91,7 @@ func (c *Client) Receive() {
 }
 
 // 发送协程
-func (c *Client) Send() {
+func (c *ClientT) Send() {
 	fmt.Println("start send")
 	defer func() {
 		if r := recover(); r != nil {
@@ -105,7 +105,7 @@ func (c *Client) Send() {
 		data := <-c.DataQueue
 		fmt.Println("+++data+++++++", data)
 
-		Log.Info("send >>>> ",
+		slog.Info("send >>>> ",
 			slog.String("client addr", c.Addr),
 			slog.Any("receive data", data))
 
@@ -121,7 +121,7 @@ func (c *Client) Send() {
 			continue
 		}
 
-		Log.Error("send", err)
+		slog.Error("send", err)
 		WsRespFailute(c.SocketConn, 1001, "send failure")
 
 		// 如果有错误，结束联系
@@ -131,7 +131,7 @@ func (c *Client) Send() {
 }
 
 // 处理接收到的数据
-func (c *Client) dispatch(data *models.Message) {
+func (c *ClientT) dispatch(data *models.Message) {
 	// 获取接收者Client
 	senderClient, ok := getUserClient(data.ReceiverId)
 	if !ok {
@@ -139,14 +139,6 @@ func (c *Client) dispatch(data *models.Message) {
 	}
 
 	fmt.Printf("\n--||||--receiver: %#v\n", senderClient)
-
-	// 保存数据到数据库
-	data, err := NewMessageServ().Save(data)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	fmt.Println("\n saved =====,===", data)
 
 	// 根据message的模式处理
 	switch data.Mode {
@@ -159,37 +151,69 @@ func (c *Client) dispatch(data *models.Message) {
 }
 
 // 发送信息
-func (c *Client) SendMessage(data *models.Message) {
+func (c *ClientT) SendMessage(data *models.Message) {
 	fmt.Println("in sendMessage: ", data)
-	// 发送信息自已要收到一条
-	go func() {
-		c.DataQueue <- data
-	}()
-
-	// 如果不是系统发送的
-	if data.SenderId != 0 && data.ReceiverId != data.SenderId {
-		// 接收者收到一条
-		receiverCilent, ok := getUserClient(data.ReceiverId)
-		fmt.Println("\n {{{ receiverClient }}}", receiverCilent)
-		if receiverCilent != nil || !ok {
-			go func() {
-				receiverCilent.DataQueue <- data
-			}()
-		}
+	// 不是系统发送，发送信息自已要收到一条
+	if data.SenderId != 0 {
+		go func() {
+			c.DataQueue <- data
+		}()
 	}
+
+	// 接收者收到一条
+	receiverCilent, ok := getUserClient(data.ReceiverId)
+	fmt.Println("\n {{{ receiverClient }}}", receiverCilent)
+	if ok && receiverCilent != nil {
+		go func() {
+			receiverCilent.DataQueue <- data
+		}()
+	}
+
+	// 保存数据到数据库
+	go func() {
+		data, err := NewMessageServ().Save(data)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		fmt.Println("\n saved =====,===", data)
+	}()
 
 	fmt.Println("[[ send end ]]")
 }
 
 // 发送群信息
-func (c *Client) SendGroupMessage(data *models.Message) {
-	for _, client := range getClients() {
-		client.SendMessage(data)
+func (c *ClientT) SendGroupMessage(data *models.Message) {
+	groups, err := NewGroupContactServ().GetMembers(data.GroupId)
+	if err != nil {
+		WsRespFailute(c.SocketConn, 1001, "send group message failure, group info not exists")
+		return
+	}
+
+	for _, member := range groups {
+		data.ReceiverId = member.UserId
+		c.SendMessage(data)
 	}
 }
 
 // 发送系统信息
-func (c *Client) SendSystemMessage(userId int64, msg string) {
+func (c *ClientT) SendGroupSystemMessage(GroupId int64, msg string) {
+	message := &models.Message{
+		SenderId:       0,
+		GroupId:        GroupId,
+		Mode:           models.MESSAGE_MODE_GROUP,
+		Type:           models.MESSAGE_TYPE_SYSTEM,
+		Content:        msg,
+		SenderStatus:   1,
+		ReceiverStatus: 1,
+	}
+
+	fmt.Println("in sendGroupSystem: exec sendGroupMessage")
+	c.SendGroupMessage(message)
+}
+
+// 发送系统信息
+func (c *ClientT) SendSystemMessage(userId int64, msg string) {
 	message := &models.Message{
 		SenderId:       0,
 		ReceiverId:     userId,
@@ -205,7 +229,7 @@ func (c *Client) SendSystemMessage(userId int64, msg string) {
 }
 
 // 开启连接
-func (c *Client) Start() {
+func (c *ClientT) Start() {
 	// 接收消息通道
 	go c.Receive()
 
@@ -217,7 +241,7 @@ func (c *Client) Start() {
 }
 
 // 关闭连接
-func (c *Client) Close() {
+func (c *ClientT) Close() {
 	c.SocketConn.Close()
 
 	// 结束协程
@@ -238,12 +262,11 @@ func WsRespFailute(ws *websocket.Conn, code int, msg string) {
 	ws.Close()
 }
 
-func receiveToMessage(data ReceiveMessage) *models.Message {
+func receiveToMessage(data ReceiveMessageT) *models.Message {
 	now := time.Now()
 
-	return &models.Message{
+	message := &models.Message{
 		SenderId:          data.From,
-		ReceiverId:        data.To,
 		Mode:              data.Mode,
 		Type:              data.Type,
 		Content:           data.Content,
@@ -257,4 +280,12 @@ func receiveToMessage(data ReceiveMessage) *models.Message {
 		SenderUpdatedAt:   now,
 		ReceiverUpdatedAt: now,
 	}
+
+	if data.Mode == models.MESSAGE_MODE_SINGLE {
+		message.ReceiverId = data.To
+	} else if data.Mode == models.MESSAGE_MODE_GROUP {
+		message.GroupId = data.To
+	}
+
+	return message
 }

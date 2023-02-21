@@ -10,7 +10,6 @@ import (
 
 func WebsocketInit() {
 	service.InitClientPool()
-	service.InitLog()
 
 	http.Handle("/chat", websocket.Handler(controllers.Chat))
 }

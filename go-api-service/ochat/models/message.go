@@ -58,8 +58,9 @@ const (
 type Message struct {
 	Id                uint64    `xorm:"pk autoincr bigint not null comment('消息id')" json:"id,omitempty" form:"id"`
 	SenderId          int64     `xorm:"bigint index('message_sender_id') not null default 0 comment('发送用户id')" json:"sender_id" form:"sender_id"`
-	ReceiverId        int64     `xorm:"bigint index('message_receiver_id_mode') not null default 0 comment('接收方id, [mode=1]:对方id,[mode=2]:群id')" json:"receiver_id,omitempty" form:"receiver_id"`
+	ReceiverId        int64     `xorm:"bigint index('message_receiver_id_mode') not null default 0 comment('接收方id')" json:"receiver_id,omitempty" form:"receiver_id"`
 	Mode              int       `xorm:"tinyint index('message_receiver_id_mode') not null default 1 comment('模式,1:单聊;2:群聊')" json:"mode" form:"mode"`
+	GroupId           int64     `xorm:"bigint not null default 0 comment('[mode=2]:群id')" json:"group_id,omitempty" form:"group_id"`
 	Type              int       `xorm:"tinyint not null default 1 comment('消息内容类型,0:系统消息;1:文字;2:图片;3:表情;4:录音;5:名片;6:红包;7:音频文件;8:视频文件;9:接龙;10:代码')" json:"type" form:"type"`
 	Content           string    `xorm:"mediumtext not null comment('消息内容')" json:"content,omitempty" form:"content"`
 	Pic               string    `xorm:"varchar(220) not null comment('预览图片')" json:"pic,omitempty" form:"pic"`

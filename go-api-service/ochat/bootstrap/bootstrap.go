@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -15,6 +14,9 @@ var (
 )
 
 func Init() {
+	// 初始化日志
+	InitLog()
+
 	// 初始化系统配置项
 	InitSysConfig()
 
@@ -66,7 +68,7 @@ func readYamlConfig[T any](file string) T {
 
 	filename := strings.TrimSuffix(file, ".yaml")
 
-	log.Printf("read %s config succuee!", filename)
+	Log.Info("read %s config succuee!", filename)
 
 	return t
 }
@@ -97,7 +99,7 @@ func readTomlConfig[T any](file string) T {
 
 	filename := strings.TrimSuffix(file, ".toml")
 
-	log.Printf("read %s config succuee!", filename)
+	Log.Info("read %s config succuee!", filename)
 
 	return t
 }

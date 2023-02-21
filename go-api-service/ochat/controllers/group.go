@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"ochat/comm"
 	"ochat/comm/funcs"
+	"ochat/models"
 	"ochat/service"
 	"strconv"
+	"strings"
 )
 
 // 群 - 查看群信息
@@ -32,6 +34,48 @@ func Group(w http.ResponseWriter, r *http.Request) {
 	}
 
 	comm.ResSuccess(w, group)
+}
+
+// 群 - 创建
+func GroupCreate(w http.ResponseWriter, r *http.Request) {
+	// verify user legal
+	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
+	if errStr != "" {
+		comm.ResFailure(w, code, errStr)
+		return
+	}
+
+	r.ParseForm()
+	usersIdStr := r.PostFormValue("users_id")
+
+	users := make([]models.User, 0)
+	if usersIdStr != "" {
+		usersIds := strings.Split(usersIdStr, ",")
+		for _, u := range usersIds {
+			if !funcs.IsNumber(u) {
+				continue
+			}
+
+			userid, _ := strconv.ParseInt(u, 10, 64)
+			user, err := service.NewUserServ().UserIdTouser(userid)
+			if err != nil {
+				continue
+			}
+
+			users = append(users, user)
+		}
+	}
+
+	ok, groupInfo, contacts, err := service.NewGroupServ().Create(user, users...)
+	if err != nil || !ok {
+		comm.ResFailure(w, 2101, err.Error())
+		return
+	}
+
+	comm.ResSuccess(w, map[string]any{
+		"group_info": groupInfo,
+		"contacts":   contacts,
+	})
 }
 
 // 群 - 查看用户的所有群信息

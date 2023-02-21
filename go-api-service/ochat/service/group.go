@@ -60,19 +60,21 @@ func (g *GroupService) Create(master models.User, members ...models.User) (
 		return false, gInfo, gs, errors.New("create group failure: creater user info is empty")
 	}
 
-	if len(members) == 0 {
-		return false, gInfo, gs, errors.New("create group failure: group members info is empty")
-	}
-
 	group := models.Group{
 		Name:      master.Nickname,
 		Icon:      master.Avatar,
 		Status:    models.GROUP_STATUS_OPEN,
 		CreatedAt: time.Now(),
 	}
+
+	// if len(members) > 0 {
+	// 创建群头像
+	// group.Icon =
+	// }
+
 	num, err := g.DB.InsertOne(&group)
 	if err != nil || num == 0 {
-		return false, group, gs, err
+		return false, gInfo, gs, err
 	}
 
 	groupContacts := make([]*models.GroupContact, 1)
@@ -87,19 +89,21 @@ func (g *GroupService) Create(master models.User, members ...models.User) (
 		CreatedAt:    time.Now(),
 	}
 
-	for _, u := range members {
-		member := &models.GroupContact{
-			UserId:       u.UserId,
-			GroupId:      group.Id,
-			GroupAlias:   master.Nickname,
-			Type:         models.GROUP_CONTACT_TYPE_MEMBER,
-			Nickname:     u.Nickname,
-			NoticeStatus: models.GROUP_CONTACT_NOTICE_STATUS_NORMAL,
-			Status:       models.GROUP_CONTACT_STATUS_NORMAL,
-			CreatedAt:    time.Now(),
-		}
+	if len(members) > 0 {
+		for _, u := range members {
+			member := &models.GroupContact{
+				UserId:       u.UserId,
+				GroupId:      group.Id,
+				GroupAlias:   master.Nickname,
+				Type:         models.GROUP_CONTACT_TYPE_MEMBER,
+				Nickname:     u.Nickname,
+				NoticeStatus: models.GROUP_CONTACT_NOTICE_STATUS_NORMAL,
+				Status:       models.GROUP_CONTACT_STATUS_NORMAL,
+				CreatedAt:    time.Now(),
+			}
 
-		groupContacts = append(groupContacts, member)
+			groupContacts = append(groupContacts, member)
+		}
 	}
 
 	num, err = NewGroupContactServ().DB.Insert(groupContacts)

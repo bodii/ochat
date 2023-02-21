@@ -51,6 +51,8 @@ func Init() {
 
 	// 群 - 查看群信息
 	http.HandleFunc("/group", controllers.Group)
+	// 群 - 创建
+	http.HandleFunc("/group/create", controllers.GroupCreate)
 	// 群 - 查看用户的所有群信息
 	http.HandleFunc("/group/list", controllers.GroupList)
 	// 群 - 修改群信息

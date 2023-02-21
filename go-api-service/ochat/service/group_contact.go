@@ -102,6 +102,23 @@ func (g *GroupContactService) Info(userId int64, groupId int64) (gc models.Group
 	return gc, err
 }
 
+// 获取群内所有合法的联系人信息
+//
+// params:
+//   - groupId [int64]: 群id
+//
+// return:
+//   - gc [[]*models.GroupContact]: 群联系人列表信息
+//   - err [error]: 失败的错误内容
+func (g *GroupContactService) GetMembers(groupId int64) (members []*models.GroupContact, err error) {
+	err = g.DB.Where("group_id = ? ", groupId).
+		In("status", models.GROUP_CONTACT_STATUS_NORMAL, models.GROUP_CONTACT_STATUS_GROUP_TOP).
+		Asc("id").
+		Find(&members)
+
+	return members, err
+}
+
 // 获取一个群内指定类型的联系人信息
 //
 // params:
