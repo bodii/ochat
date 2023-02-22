@@ -202,13 +202,15 @@ func (c *ClientT) SendGroupMessage(data *models.Message) {
 // 发送系统信息
 func (c *ClientT) SendGroupSystemMessage(GroupId int64, msg string) {
 	message := &models.Message{
-		SenderId:       0,
-		GroupId:        GroupId,
-		Mode:           models.MESSAGE_MODE_GROUP,
-		Type:           models.MESSAGE_TYPE_SYSTEM,
-		Content:        msg,
-		SenderStatus:   1,
-		ReceiverStatus: 1,
+		SenderId:        0,
+		GroupId:         GroupId,
+		Mode:            models.MESSAGE_MODE_GROUP,
+		Type:            models.MESSAGE_TYPE_SYSTEM,
+		Content:         msg,
+		SenderStatus:    models.MESSAGE_SENDER_STATUS_DEFAULT,
+		ReceiverStatus:  models.MESSAGE_RECEIVER_STATUS_UNREAD,
+		CreatedAt:       time.Now(),
+		SenderUpdatedAt: time.Now(),
 	}
 
 	fmt.Println("in sendGroupSystem: exec sendGroupMessage")
@@ -218,13 +220,15 @@ func (c *ClientT) SendGroupSystemMessage(GroupId int64, msg string) {
 // 发送系统信息
 func (c *ClientT) SendSystemMessage(userId int64, msg string) {
 	message := &models.Message{
-		SenderId:       0,
-		ReceiverId:     userId,
-		Mode:           models.MESSAGE_MODE_SINGLE,
-		Type:           models.MESSAGE_TYPE_SYSTEM,
-		Content:        msg,
-		SenderStatus:   1,
-		ReceiverStatus: 1,
+		SenderId:        0,
+		ReceiverId:      userId,
+		Mode:            models.MESSAGE_MODE_SINGLE,
+		Type:            models.MESSAGE_TYPE_SYSTEM,
+		Content:         msg,
+		SenderStatus:    models.MESSAGE_SENDER_STATUS_DEFAULT,
+		ReceiverStatus:  models.MESSAGE_RECEIVER_STATUS_UNREAD,
+		CreatedAt:       time.Now(),
+		SenderUpdatedAt: time.Now(),
 	}
 
 	fmt.Println("in sendSystem: exec sendMessage")

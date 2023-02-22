@@ -11,7 +11,6 @@ create table message (
     url varchar(220) not null default '' comment '服务的url',
     about varchar(220) not null default '' comment '简单描述',
     amount decimal not null default 0.00 comment '金额',
-    status tinyint not null default 0 comment '是否已读,-2:删除;-1:撤销;0:有效;1:已读',
     sender_status   tinyint  not null default 1 comment '发送者状态,-1:撤回;0:删除;1:成功（默认）;2:锁定（不可再撤回）;',
 	receiver_status tinyint not null default 0 comment '接收者状态,-1:删除;0:未读;1:已读',
     created_at datetime(6) not null  comment '创建时间',
