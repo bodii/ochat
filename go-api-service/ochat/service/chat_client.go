@@ -26,6 +26,7 @@ type ReceiveMessageT struct {
 	From    int64  `json:"from" form:"from"`
 	To      int64  `json:"to,omitempty" form:"to"`
 	Mode    int    `json:"mode" form:"mode"`
+	GroupId int64  `json:"group_id" form:"group_id"`
 	Type    int    `json:"type" form:"type"`
 	Content string `json:"content,omitempty" form:"content"`
 	Pic     string `json:"pic,omitempty" form:"pic"`
@@ -164,6 +165,8 @@ func (c *ClientT) SendMessage(data *models.Message) {
 	receiverCilent, ok := getUserClient(data.ReceiverId)
 	fmt.Println("\n {{{ receiverClient }}}", receiverCilent)
 	if ok && receiverCilent != nil {
+		data.ReceiverStatus = models.MESSAGE_RECEIVER_STATUS_READED
+		data.ReceiverUpdatedAt = time.Now()
 		go func() {
 			receiverCilent.DataQueue <- data
 		}()
@@ -266,19 +269,20 @@ func receiveToMessage(data ReceiveMessageT) *models.Message {
 	now := time.Now()
 
 	message := &models.Message{
-		SenderId:          data.From,
-		Mode:              data.Mode,
-		Type:              data.Type,
-		Content:           data.Content,
-		Pic:               data.Pic,
-		Url:               data.Url,
-		About:             data.About,
-		Amount:            data.Amount,
-		SenderStatus:      1,
-		ReceiverStatus:    1,
-		CreatedAt:         now,
-		SenderUpdatedAt:   now,
-		ReceiverUpdatedAt: now,
+		SenderId:        data.From,
+		ReceiverId:      data.To,
+		Mode:            data.Mode,
+		GroupId:         data.GroupId,
+		Type:            data.Type,
+		Content:         data.Content,
+		Pic:             data.Pic,
+		Url:             data.Url,
+		About:           data.About,
+		Amount:          data.Amount,
+		SenderStatus:    models.MESSAGE_SENDER_STATUS_DEFAULT,
+		ReceiverStatus:  models.MESSAGE_RECEIVER_STATUS_UNREAD,
+		CreatedAt:       now,
+		SenderUpdatedAt: now,
 	}
 
 	if data.Mode == models.MESSAGE_MODE_SINGLE {
