@@ -175,7 +175,7 @@ func (s *UserService) CreateQrCode(user *models.User) (filename string, err erro
 		return "", err
 	}
 
-	user.QrCode = funcs.GetImgUrl("user_qrcode", filename)
+	user.QrCode, _ = funcs.GetImgUrl("user_qrcode", filename)
 	user.UpdatedAt = time.Now()
 
 	num, err := s.DB.Where("user_id =?", user.UserId).Cols("qr_code", "updated_at").Update(&user)

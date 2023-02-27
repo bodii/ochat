@@ -55,7 +55,7 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 
 	if avatar == "" {
 		avatarFilename := funcs.DefaultAvatar(sex)
-		avatar = funcs.GetImgUrl("avatar", avatarFilename)
+		avatar, _ = funcs.GetImgUrl("user_avatar", avatarFilename)
 	}
 
 	if nickname == "" {

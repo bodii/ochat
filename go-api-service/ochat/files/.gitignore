@@ -1,7 +1,7 @@
-upload/avatar/*
 upload/image/*
 upload/video/*
 upload/voice/*
+upload/user_avatar/*
 upload/login_qrcode/*
 upload/user_qrcode/*
 upload/group_qrcode/*

@@ -16,12 +16,12 @@ func AvatarUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename, _, err := funcs.UploadFile(r, "avatar_image", "avatar")
+	filename, _, err := funcs.UploadFile(r, "avatar_image", "user_avatar")
 	if err != nil {
 		comm.ResFailure(w, 1001, "upload avatar file failure")
 	}
 
-	url := funcs.GetImgUrl("avatar", filename)
+	url, _ := funcs.GetImgUrl("user_avatar", filename)
 
 	r.PostForm.Add("avatar", url)
 	user.Avatar = url

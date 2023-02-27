@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"image"
 	"net/url"
 	"ochat/bootstrap"
 	"ochat/comm/funcs"
@@ -67,11 +68,24 @@ func (g *GroupService) Create(master models.User, members ...models.User) (
 		CreatedAt: time.Now(),
 	}
 
-	// if len(members) > 0 {
-	// 创建群头像
-	// group.Icon =
-	// }
+	// 获取群主和前5名成员的用户头像
+	avatars := []string{
+		master.Avatar,
+	}
+	for i, m := range members {
+		if i >= 5 {
+			break
+		}
+		avatars = append(avatars, m.Avatar)
+	}
 
+	// 创建群头像：将前6名用户的头像合并成一个群头像
+	filename := funcs.RandFileName(".jpg")
+	group.Icon, _ = funcs.GetImgUrl("group_avatar", filename)
+	filePath := funcs.GetUploadFilePath("group_avatar", filename)
+	go funcs.MergeImage(filePath, 200, 5, 3, image.White, avatars)
+
+	// 保存数据
 	num, err := g.DB.InsertOne(&group)
 	if err != nil || num == 0 {
 		return false, gInfo, gs, err
@@ -149,7 +163,7 @@ func (g *GroupService) CreateQrCode(group *models.Group) (filename string, err e
 		return "", err
 	}
 
-	group.QrCode = funcs.GetImgUrl("group_qrcode", filename)
+	group.QrCode, _ = funcs.GetImgUrl("group_qrcode", filename)
 	group.UpdatedAt = time.Now()
 
 	num, err := g.DB.Where("id =?", group.Id).Cols("qr_code", "updated_at").Update(group)

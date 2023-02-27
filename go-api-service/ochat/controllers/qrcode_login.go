@@ -28,7 +28,7 @@ func LoginQRCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qrcodeUrl := funcs.GetImgUrl("login_qrcode", filename)
+	qrcodeUrl, _ := funcs.GetImgUrl("login_qrcode", filename)
 	comm.ResSuccess(w, comm.D{
 		"qrcode_url": qrcodeUrl,
 	})

@@ -7,3 +7,13 @@ env = "dev" # dev、test、product
 host = "127.0.0.1"
 port = 8080
 scheme = "http"
+
+[upload_file_path]
+image = "files/upload/image/"
+video = "files/upload/video/"
+voice = "files/upload/voice/"
+user_avatar = "files/upload/user_avatar/"
+login_qrcode = "files/upload/login_qrcode/"
+user_qrcode = "files/upload/user_qrcode/"
+group_qrcode = "files/upload/group_qrcode/"
+group_avatar = "files/upload/group_avatar/"

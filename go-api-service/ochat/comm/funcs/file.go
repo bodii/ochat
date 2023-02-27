@@ -1,7 +1,14 @@
 package funcs
 
 import (
+	"errors"
 	"fmt"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"log"
 	"net/http"
@@ -9,8 +16,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/nfnt/resize"
 	"github.com/skip2/go-qrcode"
 )
 
@@ -48,11 +57,12 @@ func RandFileName(suffix string) string {
 //   - err [error]: error info
 func QrCode(url string, pathTag string) (filename string, err error) {
 	filename = RandFileName(".png")
-	filePath := path.Join(GetProjectDIR(), "/files/upload/", pathTag, filename)
-	saveRealPath := filepath.Dir(filePath)
-	if ok, _ := PathExists(saveRealPath); !ok {
-		os.MkdirAll(saveRealPath, os.ModePerm)
+	savePath, ok := bootstrap.UploadDirs[pathTag]
+	if !ok {
+		return "", errors.New(pathTag + " upload path is not exists")
 	}
+
+	filePath := path.Join(GetProjectDIR(), savePath, filename)
 
 	err = qrcode.WriteFile(url, qrcode.Medium, 256, filePath)
 	if err != nil {
@@ -103,13 +113,20 @@ func CopyFile(dst string, src string) error {
 //
 // return:
 //   - url [string]: the url address is generated successfully
-func GetImgUrl(pathTag, filename string) (url string) {
+func GetImgUrl(pathTag, filename string) (url string, err error) {
 	if pathTag == "" || filename == "" {
-		return ""
+		return "", errors.New("pathTag or filename is not empty")
 	}
 
-	return fmt.Sprintf("%s/%s?path=%s&filename=%s",
+	_, ok := bootstrap.UploadDirs[pathTag]
+	if !ok {
+		return "", errors.New(pathTag + " upload path is not exists")
+	}
+
+	url = fmt.Sprintf("%s/%s?path=%s&filename=%s",
 		bootstrap.HTTP_HOST, "files/image", pathTag, filename)
+
+	return url, nil
 }
 
 // get a default profile picture based on gender
@@ -133,11 +150,7 @@ func DefaultAvatar(sex int) (filename string) {
 	staticAvatarPath = path.Join(staticAvatarPath, defaultAvatar)
 
 	newFilename := RandFileName(".png")
-	newAvatarPath := GetUploadFilePath("avatar", newFilename)
-	saveRealPath := filepath.Dir(newAvatarPath)
-	if ok, _ := PathExists(saveRealPath); !ok {
-		os.MkdirAll(saveRealPath, os.ModePerm)
-	}
+	newAvatarPath := GetUploadFilePath("user_avatar", newFilename)
 
 	// copy file
 	err := CopyFile(newAvatarPath, staticAvatarPath)
@@ -168,7 +181,12 @@ func PathExists(path string) (bool, error) {
 // return:
 //   - [string]: path to save the file
 func GetUploadFilePath(pathTag, fielname string) string {
-	return path.Join(GetProjectDIR(), "/files/upload/", pathTag, fielname)
+	filePath, ok := bootstrap.UploadDirs[pathTag]
+	if !ok {
+		return ""
+	}
+
+	return path.Join(GetProjectDIR(), filePath, fielname)
 }
 
 // get a default profile picture based on gender
@@ -189,11 +207,6 @@ func UploadFile(r *http.Request, upName, pathTag string) (filename, oldFilename 
 	filename = RandFileName(filepath.Ext(oldFilename))
 	filePath := GetUploadFilePath(pathTag, filename)
 
-	saveRealPath := filepath.Dir(filePath)
-	if ok, _ := PathExists(saveRealPath); !ok {
-		os.MkdirAll(saveRealPath, os.ModePerm)
-	}
-
 	savePath, err := os.Create(filePath)
 	if err != nil {
 		return filename, oldFilename, err
@@ -203,4 +216,114 @@ func UploadFile(r *http.Request, upName, pathTag string) (filename, oldFilename 
 	io.Copy(savePath, file)
 
 	return
+}
+
+func CheckOrCreateDirectory(filePath string) bool {
+	saveRealPath := filepath.Dir(filePath)
+	if ok, _ := PathExists(saveRealPath); !ok {
+		err := os.MkdirAll(saveRealPath, os.ModePerm)
+		if err != nil {
+			return false
+		}
+	}
+
+	return true
+}
+
+// combine multiple pictures into one picture
+//
+// param:
+//   - dst [string]: to save the composited image address
+//   - canvasWidth [int]: to save the canvas width
+//   - spacingWidth [int]: the spacing when stitching pictures together
+//   - columnNum [int]: how many columns are displayed in each row
+//   - background [color.Color]: the background color of the picture to save
+//   - images [ []string ]: which images to merge
+//
+// return:
+//   - void
+func MergeImage(dst string, canvasWidth, spacingWidth, columnNum int,
+	background color.Color, images []string) {
+
+	// 创建要保存的文件
+	file, _ := os.Create(dst)
+	defer file.Close()
+
+	// 创建画布
+	jpg := image.NewRGBA(image.Rect(0, 0, canvasWidth, canvasWidth))
+	// 设置背景色为白色
+	for x := 0; x < jpg.Bounds().Dx(); x++ {
+		for y := 0; y < jpg.Bounds().Dy(); y++ {
+			jpg.Set(x, y, image.White)
+		}
+	}
+
+	// imagesCount := len(images)
+	imgWidth := (canvasWidth - (spacingWidth * (columnNum + 1))) / columnNum
+	for i, img := range images {
+		imgFile := ReadInternetImage(img)
+		m := ResizeImage(uint(imgWidth), 0, imgFile)
+
+		x := i % columnNum
+		y := i / columnNum
+
+		startX := x*imgWidth + (x+1)*spacingWidth
+
+		startY := y*imgWidth + (y+1)*spacingWidth
+
+		draw.Draw(jpg, jpg.Bounds(), m,
+			m.Bounds().Min.Sub(image.Pt(startX, startY)), draw.Over)
+	}
+
+	jpeg.Encode(file, jpg, nil)
+}
+
+func ResizeImage(width, height uint, img image.Image) image.Image {
+	return resize.Resize(width, height, img, resize.Lanczos3)
+}
+
+func ReadInternetImage(src string) image.Image {
+	rsp, err := http.Get(src)
+	if err != nil {
+		panic(err)
+	}
+	defer rsp.Body.Close()
+
+	imageType, ok := rsp.Header["Content-Type"]
+	if !ok {
+		panic("file type is not exists")
+	}
+	str := strings.Split(imageType[0], "/")
+	format := str[1]
+
+	var img image.Image
+	if format == "png" {
+		img, err = png.Decode(rsp.Body)
+	} else if format == "jpeg" {
+		img, err = jpeg.Decode(rsp.Body)
+	} else if format == "gif" {
+		img, err = gif.Decode(rsp.Body)
+	} else {
+		panic(errors.New("not image format"))
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	return img
+}
+
+func ReadImage(src string) image.Image {
+	file, err := os.Open(src)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		panic(err)
+	}
+
+	return img
 }
