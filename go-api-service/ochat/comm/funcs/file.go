@@ -150,7 +150,7 @@ func DefaultAvatar(sex int) (filename string) {
 	staticAvatarPath = path.Join(staticAvatarPath, defaultAvatar)
 
 	newFilename := RandFileName(".png")
-	newAvatarPath := GetUploadFilePath("user_avatar", newFilename)
+	newAvatarPath, _ := GetUploadFilePath("user_avatar", newFilename)
 
 	// copy file
 	err := CopyFile(newAvatarPath, staticAvatarPath)
@@ -180,13 +180,13 @@ func PathExists(path string) (bool, error) {
 //
 // return:
 //   - [string]: path to save the file
-func GetUploadFilePath(pathTag, fielname string) string {
+func GetUploadFilePath(pathTag, fielname string) (savePath string, err error) {
 	filePath, ok := bootstrap.UploadDirs[pathTag]
 	if !ok {
-		return ""
+		return "", errors.New(pathTag + " is illegality")
 	}
 
-	return path.Join(GetProjectDIR(), filePath, fielname)
+	return path.Join(GetProjectDIR(), filePath, fielname), nil
 }
 
 // get a default profile picture based on gender
@@ -205,7 +205,7 @@ func UploadFile(r *http.Request, upName, pathTag string) (filename, oldFilename 
 
 	oldFilename = fileHeader.Filename
 	filename = RandFileName(filepath.Ext(oldFilename))
-	filePath := GetUploadFilePath(pathTag, filename)
+	filePath, _ := GetUploadFilePath(pathTag, filename)
 
 	savePath, err := os.Create(filePath)
 	if err != nil {

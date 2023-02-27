@@ -82,7 +82,7 @@ func (g *GroupService) Create(master models.User, members ...models.User) (
 	// 创建群头像：将前6名用户的头像合并成一个群头像
 	filename := funcs.RandFileName(".jpg")
 	group.Icon, _ = funcs.GetImgUrl("group_avatar", filename)
-	filePath := funcs.GetUploadFilePath("group_avatar", filename)
+	filePath, _ := funcs.GetUploadFilePath("group_avatar", filename)
 	go funcs.MergeImage(filePath, 200, 5, 3, image.White, avatars)
 
 	// 保存数据

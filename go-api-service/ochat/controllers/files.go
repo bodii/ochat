@@ -16,7 +16,7 @@ func ImageShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := funcs.GetUploadFilePath(path, filename)
+	filePath, _ := funcs.GetUploadFilePath(path, filename)
 
 	fileBytes, err := os.Open(filePath)
 	if err != nil {
