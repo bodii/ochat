@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"log"
 	"ochat/service"
 
@@ -16,17 +15,17 @@ func Chat(ws *websocket.Conn) {
 	// verify user legal
 	user, code, errStr := service.NewUserServ().CheckUserRequestLegal(r)
 	if errStr != "" {
-		fmt.Println("websocket conn before get userinfo:", errStr)
+		log.Println("websocket conn before get userinfo:", errStr)
 		service.WsRespFailute(ws, code, errStr)
 		return
 	}
-	fmt.Println(user)
+	log.Println(user)
 
 	client := service.NewWsCline(ws, user.UserId)
 
 	client.SendSystemMessage(user.UserId, "hello, welcome you")
 
-	fmt.Printf("\nwebSocket 与客户端建立连接: %#v  senderId: %d\n\n", client.Addr, user.UserId)
+	log.Printf("webSocket 与客户端建立连接: %#v  senderId: %d\n", client.Addr, user.UserId)
 
 	client.Start()
 }

@@ -5,39 +5,38 @@ import (
 )
 
 // 连接池
-var ClientPool *PoolT
+var clientPool *PoolT
 
 func InitClientPool() {
-	ClientPool = newPool()
+	clientPool = newPool()
 }
 
 type PoolT struct {
-	Clients map[int64]*ClientT
-	Lock    *sync.RWMutex
+	clients map[int64]*ClientT
+	lock    sync.RWMutex
 }
 
 func newPool() *PoolT {
 	return &PoolT{
-		Clients: make(map[int64]*ClientT),
-		Lock:    &sync.RWMutex{},
+		clients: make(map[int64]*ClientT),
 	}
 }
 
 // 设置用户Client到链接池
 func setUserClient(userId int64, client *ClientT) bool {
-	ClientPool.Lock.Lock()
-	defer ClientPool.Lock.Unlock()
+	clientPool.lock.Lock()
+	defer clientPool.lock.Unlock()
 
-	ClientPool.Clients[userId] = client
+	clientPool.clients[userId] = client
 
 	return true
 }
 
 func getUserClient(userId int64) (*ClientT, bool) {
-	ClientPool.Lock.RLock()
-	defer ClientPool.Lock.RUnlock()
+	clientPool.lock.RLock()
+	defer clientPool.lock.RUnlock()
 
-	if client, ok := ClientPool.Clients[userId]; ok {
+	if client, ok := clientPool.clients[userId]; ok {
 		return client, ok
 	}
 
@@ -45,32 +44,34 @@ func getUserClient(userId int64) (*ClientT, bool) {
 }
 
 func delUserClient(userId int64) (*ClientT, bool) {
-	ClientPool.Lock.Lock()
-	defer ClientPool.Lock.Unlock()
+	clientPool.lock.Lock()
+	defer clientPool.lock.Unlock()
 
-	if client, ok := ClientPool.Clients[userId]; ok {
-		delete(ClientPool.Clients, userId)
+	if client, ok := clientPool.clients[userId]; ok {
+		delete(clientPool.clients, userId)
 		return client, true
 	}
 
 	return nil, false
 }
 
-func getClients() map[int64]*ClientT {
-	ClientPool.Lock.RLock()
-	defer ClientPool.Lock.RUnlock()
+func getclients() map[int64]*ClientT {
+	clientPool.lock.RLock()
+	defer clientPool.lock.RUnlock()
 
-	return ClientPool.Clients
+	return clientPool.clients
 }
 
-// getClientsUsersId
-func getClientsUsersId() []int64 {
-	ClientPool.Lock.RLock()
-	defer ClientPool.Lock.RUnlock()
+// getclientsUsersId
+func getclientsUsersId() []int64 {
+	clientPool.lock.RLock()
+	defer clientPool.lock.RUnlock()
 
-	userIds := make([]int64, 0)
-	for userid := range ClientPool.Clients {
-		userIds = append(userIds, userid)
+	userIds := make([]int64, len(clientPool.clients))
+	i := 0
+	for userid := range clientPool.clients {
+		userIds[i] = userid
+		i++
 	}
 
 	return userIds

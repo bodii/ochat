@@ -2,17 +2,18 @@ package bootstrap
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"sync"
 
 	"github.com/go-redis/redis/v8"
-	"golang.org/x/exp/slog"
 	"golang.org/x/net/context"
 )
 
 var (
-	redis_init_once sync.Once
-	RedisClient     *redis.Client
-	RedisContext    context.Context
+	_redisInitOnce sync.Once
+	RedisClient    *redis.Client
+	RedisContext   context.Context
 )
 
 // redisList config struct type
@@ -30,7 +31,7 @@ type redisConfT struct {
 
 func RedisOnceInit() *redis.Client {
 
-	redis_init_once.Do(initRedis)
+	_redisInitOnce.Do(initRedis)
 
 	return RedisClient
 }
@@ -56,8 +57,9 @@ func initRedis() {
 	ping, err := RedisClient.Ping(RedisContext).Result()
 	if err != nil || ping != "PONG" {
 		RedisClient.Close()
-		panic(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
-	slog.Info("init redis success!")
+	log.Println("init redis success!")
 }

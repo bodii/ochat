@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -10,9 +11,9 @@ import (
 )
 
 var (
-	DB_Engine    *xorm.Engine
-	db_init_once sync.Once
-	mysqlConf    mysqlConfT
+	DB_Engine   *xorm.Engine
+	_dbInitOnce sync.Once
+	_mysqlConf  mysqlConfT
 )
 
 type mysqlListConfT struct {
@@ -34,8 +35,7 @@ type mysqlConfT struct {
 
 func DBOnceInit() *xorm.Engine {
 
-	db_init_once.Do(initDbConnect)
-	// fmt.Printf("%#v\n", DB_Engine)
+	_dbInitOnce.Do(initDbConnect)
 
 	return DB_Engine
 }
@@ -43,7 +43,7 @@ func DBOnceInit() *xorm.Engine {
 // read  database.yaml config and set var
 func loadDatabaseConfig() {
 	mysqlListConf := readTomlConfig[mysqlListConfT]("database.toml")
-	mysqlConf = mysqlListConf.DBs[0]
+	_mysqlConf = mysqlListConf.DBs[0]
 }
 
 func initDbConnect() {
@@ -52,30 +52,30 @@ func initDbConnect() {
 
 	dataSource := fmt.Sprintf(
 		"%s:%s@(%s:%d)/%s?charset=%s",
-		mysqlConf.User,
-		mysqlConf.Password,
-		mysqlConf.Host,
-		mysqlConf.Port,
-		mysqlConf.Database,
-		mysqlConf.Charset,
+		_mysqlConf.User,
+		_mysqlConf.Password,
+		_mysqlConf.Host,
+		_mysqlConf.Port,
+		_mysqlConf.Database,
+		_mysqlConf.Charset,
 	)
 
-	db_engine, err := xorm.NewEngine(
-		mysqlConf.DriverName, dataSource)
+	dbEngine, err := xorm.NewEngine(
+		_mysqlConf.DriverName, dataSource)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	// show sql
-	db_engine.ShowSQL(mysqlConf.ShowSQL)
+	dbEngine.ShowSQL(_mysqlConf.ShowSQL)
 
 	// max connect number
-	db_engine.SetMaxOpenConns(mysqlConf.MaxLineNums)
+	dbEngine.SetMaxOpenConns(_mysqlConf.MaxLineNums)
 
 	// auto sync
-	// db_engine.Sync2()
-
-	DB_Engine = db_engine
+	// DB_Engine.Sync2()
+	DB_Engine = dbEngine
 
 	log.Println("init database success!")
 }

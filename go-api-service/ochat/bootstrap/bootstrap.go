@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -54,7 +56,8 @@ func projectDIR() string {
 //   - [T]: type
 func readYamlConfig[T any](file string) T {
 	if 1 > strings.LastIndex(file, ".yaml") {
-		panic("input file name not is yaml file")
+		fmt.Fprintf(os.Stderr, "input file name not is %s yaml file\n", file)
+		os.Exit(1)
 	}
 
 	configPath := path.Join(projectDIR(), "config/"+file)
@@ -63,12 +66,13 @@ func readYamlConfig[T any](file string) T {
 	var t T
 	err := yaml.Unmarshal(content, &t)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintf(os.Stderr, "%s -> %v\n", file, err)
+		os.Exit(1)
 	}
 
 	filename := strings.TrimSuffix(file, ".yaml")
 
-	Log.Info("read %s config succuee!", filename)
+	log.Printf("read %s config succuee!", filename)
 
 	return t
 }
@@ -84,7 +88,8 @@ func readYamlConfig[T any](file string) T {
 //   - [T]: type
 func readTomlConfig[T any](file string) T {
 	if 1 > strings.LastIndex(file, ".toml") {
-		panic("input file name not is toml file")
+		fmt.Fprintf(os.Stderr, "input file name not is %s toml file\n", file)
+		os.Exit(1)
 	}
 
 	configPath := path.Join(projectDIR(), "config", file)
@@ -92,14 +97,14 @@ func readTomlConfig[T any](file string) T {
 
 	var t T
 	err := toml.Unmarshal(content, &t)
-	// fmt.Printf("%#v\n", t)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintf(os.Stderr, "%s -> %v\n", file, err)
+		os.Exit(1)
 	}
 
 	filename := strings.TrimSuffix(file, ".toml")
 
-	Log.Info("read %s config succuee!", filename)
+	log.Printf("read %s config succuee!", filename)
 
 	return t
 }

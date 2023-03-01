@@ -23,6 +23,10 @@ func VaildataPasswd(newPwd, salt, oldPwdAndSalt string) bool {
 // return:
 //   - [bool] this is a mobile: true|false
 func IsMobile(str string) bool {
+	if str == "" {
+		return false
+	}
+
 	return regexp.MustCompile(`^(1[3|4|5|7|8|9]\d{9})$`).
 		Match([]byte(str))
 }

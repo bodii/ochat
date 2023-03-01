@@ -2,13 +2,14 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"ochat/comm"
 	"ochat/models"
+	"os"
 	"runtime/debug"
 	"sync"
 	"time"
 
-	"golang.org/x/exp/slog"
 	"golang.org/x/net/websocket"
 )
 
@@ -55,7 +56,6 @@ func NewWsCline(ws *websocket.Conn, userId int64) *ClientT {
 
 // 接收协程
 func (c *ClientT) Receive() {
-	fmt.Println("start receive")
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("receive stop", string(debug.Stack()), r)
@@ -68,19 +68,15 @@ func (c *ClientT) Receive() {
 		// 接收数据
 		var data ReceiveMessageT
 		err := websocket.JSON.Receive(c.SocketConn, &data)
-		fmt.Println("data===========:", data)
+		log.Println("websocket receive data:", data)
 		if err != nil {
-			slog.Error("receive: ", err, slog.Any("receive data:", data))
+			log.Fatalf("receive: %v", err)
 			return
 		}
 
 		if data.Content == "" {
 			continue
 		}
-
-		slog.Info("recv <<<< :",
-			slog.String("client addr", c.Addr),
-			slog.Any("receive data", data))
 
 		// 将接收到的数据转换成models.Message
 		message := receiveToMessage(data)
@@ -93,7 +89,6 @@ func (c *ClientT) Receive() {
 
 // 发送协程
 func (c *ClientT) Send() {
-	fmt.Println("start send")
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("send stop", string(debug.Stack()), r)
@@ -104,11 +99,8 @@ func (c *ClientT) Send() {
 
 	for {
 		data := <-c.DataQueue
-		fmt.Println("+++data+++++++", data)
-
-		slog.Info("send >>>> ",
-			slog.String("client addr", c.Addr),
-			slog.Any("receive data", data))
+		log.Println("websocket send ip:", c.Addr)
+		log.Println("websocket send data:", data)
 
 		err := websocket.JSON.Send(c.SocketConn, &comm.ResType{
 			Code: 1,
@@ -116,13 +108,11 @@ func (c *ClientT) Send() {
 			Data: data,
 		})
 
-		fmt.Println()
-
 		if err == nil {
 			continue
 		}
 
-		slog.Error("send", err)
+		fmt.Fprintln(os.Stderr, err)
 		WsRespFailute(c.SocketConn, 1001, "send failure")
 
 		// 如果有错误，结束联系
@@ -136,10 +126,10 @@ func (c *ClientT) dispatch(data *models.Message) {
 	// 获取接收者Client
 	senderClient, ok := getUserClient(data.ReceiverId)
 	if !ok {
-		fmt.Println("\n--||||--receiver not exists")
+		log.Println("websocket chat client dispatch: receiver not exists")
 	}
 
-	fmt.Printf("\n--||||--receiver: %#v\n", senderClient)
+	log.Printf("\nreceiver: %#v\n", senderClient)
 
 	// 根据message的模式处理
 	switch data.Mode {
@@ -153,7 +143,7 @@ func (c *ClientT) dispatch(data *models.Message) {
 
 // 发送信息
 func (c *ClientT) SendMessage(data *models.Message) {
-	fmt.Println("in sendMessage: ", data)
+	log.Println("sendMessage: ", data)
 	// 不是系统发送，发送信息自已要收到一条
 	if data.SenderId != 0 {
 		go func() {
@@ -163,7 +153,6 @@ func (c *ClientT) SendMessage(data *models.Message) {
 
 	// 接收者收到一条
 	receiverCilent, ok := getUserClient(data.ReceiverId)
-	fmt.Println("\n {{{ receiverClient }}}", receiverCilent)
 	if ok && receiverCilent != nil {
 		data.ReceiverStatus = models.MESSAGE_RECEIVER_STATUS_READED
 		data.ReceiverUpdatedAt = time.Now()
@@ -176,13 +165,11 @@ func (c *ClientT) SendMessage(data *models.Message) {
 	go func() {
 		data, err := NewMessageServ().Save(data)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 		}
 
-		fmt.Println("\n saved =====,===", data)
+		log.Println("message saved:", data)
 	}()
-
-	fmt.Println("[[ send end ]]")
 }
 
 // 发送群信息
@@ -213,7 +200,7 @@ func (c *ClientT) SendGroupSystemMessage(GroupId int64, msg string) {
 		SenderUpdatedAt: time.Now(),
 	}
 
-	fmt.Println("in sendGroupSystem: exec sendGroupMessage")
+	log.Println("in sendGroupSystem: exec sendGroupMessage")
 	c.SendGroupMessage(message)
 }
 
@@ -231,7 +218,7 @@ func (c *ClientT) SendSystemMessage(userId int64, msg string) {
 		SenderUpdatedAt: time.Now(),
 	}
 
-	fmt.Println("in sendSystem: exec sendMessage")
+	log.Println("in sendSystem: exec sendMessage")
 	c.SendMessage(message)
 }
 
@@ -256,7 +243,7 @@ func (c *ClientT) Close() {
 
 	delUserClient(c.UserId)
 
-	fmt.Println("\n\n [[[   end   ]]]")
+	log.Println("closed!")
 }
 
 // 错误时的返回信息

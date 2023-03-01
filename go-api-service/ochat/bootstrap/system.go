@@ -90,4 +90,6 @@ func initUploadDirectory() {
 			go os.MkdirAll(f, os.ModePerm)
 		}
 	}
+
+	log.Println("init upload directory success!")
 }
